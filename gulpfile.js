@@ -194,7 +194,7 @@ gulp.task('build-compressed', function (cb) {
     // Flatten all files so they're in the same directory, but ensure that
     // files with the same name don't conflict.
     .pipe(gulp.rename(function (p) {
-      var dirname = p.dirname.replace(new RegExp(path.sep, "g"), "-");
+      var dirname = p.dirname.replace(new RegExp(path.sep.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), "g"), "-");
       p.dirname = "";
       p.basename = dirname + "-" + p.basename;
     }))
@@ -324,19 +324,29 @@ gulp.task('build-dart', function() {
 });
 
 /**
+ * This task builds the logo generator:
+ *     logo_compressed.js
+ */
+gulp.task('build-logo', function() {
+  return buildGenerator('logo', 'Logo');
+});
+
+/**
  * This tasks builds all the generators:
  *     javascript_compressed.js
  *     python_compressed.js
  *     php_compressed.js
  *     lua_compressed.js
  *     dart_compressed.js
+ *     logo_compressed.js
  */
 gulp.task('build-generators', gulp.parallel(
   'build-javascript',
   'build-python',
   'build-php',
   'build-lua',
-  'build-dart'
+  'build-dart',
+  'build-logo'
 ));
 
 /**
@@ -468,6 +478,7 @@ gulp.task('build-core', gulp.parallel(
  *     php_compressed.js
  *     lua_compressed.js
  *     dart_compressed.js
+ *     logo_compressed.js
  *     blockly_uncompressed.js
  *     msg/json/*.js
  */
@@ -738,6 +749,9 @@ gulp.task('package-node', function() {
       }, {
         name: 'BlocklyDart',
         cjs: './dart',
+      }, {
+        name: 'BlocklyLogo',
+        cjs: './logo',
       }]))
     .pipe(gulp.rename('node.js'))
     .pipe(gulp.dest(packageDistribution));
@@ -817,6 +831,14 @@ gulp.task('package-dart', function() {
  */
 gulp.task('package-php', function() {
   return packageGenerator('php_compressed.js', 'php.js', 'Blockly.PHP');
+});
+
+/**
+ * This task wraps logo_compressed.js into a UMD module.
+ * @example import 'blockly/logo';
+ */
+gulp.task('package-logo', function() {
+  return packageGenerator('logo_compressed.js', 'logo.js', 'Blockly.Logo');
 });
 
 /**
@@ -908,6 +930,7 @@ gulp.task('package', gulp.parallel(
   'package-lua',
   'package-dart',
   'package-php',
+  'package-logo',
   'package-locales',
   'package-media',
   'package-umd-bundle',

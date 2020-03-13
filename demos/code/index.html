@@ -14,6 +14,7 @@
   <script src="../../php_compressed.js"></script>
   <script src="../../lua_compressed.js"></script>
   <script src="../../dart_compressed.js"></script>
+  <script src="../../logo_compressed.js"></script>
   <script src="code.js"></script>
 </head>
 <body>
@@ -44,6 +45,8 @@
             <td id="tab_lua" class="taboff tab_collapse">Lua</td>
             <td class="tabmin tab_collapse">&nbsp;</td>
             <td id="tab_dart" class="taboff tab_collapse">Dart</td>
+            <td class="tabmin tab_collapse">&nbsp;</td>
+            <td id="tab_logo" class="taboff tab_collapse">Logo</td>
             <td class="tabmin tab_collapse">&nbsp;</td>
             <td id="tab_xml" class="taboff tab_collapse">XML</td>
             <td class="tabmin">&nbsp;</td>
@@ -76,6 +79,7 @@
   <pre id="content_php" class="content prettyprint lang-php"></pre>
   <pre id="content_lua" class="content prettyprint lang-lua"></pre>
   <pre id="content_dart" class="content prettyprint lang-dart"></pre>
+  <pre id="content_logo" class="content prettyprint lang-logo"></pre>
   <textarea id="content_xml" class="content" wrap="off"></textarea>
 
   <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
@@ -387,6 +391,64 @@
     <sep></sep>
     <category name="%{BKY_CATVARIABLES}" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
     <category name="%{BKY_CATFUNCTIONS}" colour="%{BKY_PROCEDURES_HUE}" custom="PROCEDURE"></category>
+    <sep></sep>
+    <category name="Logo">
+      <block type="logo_move">
+        <field name="OP">FD</field>
+        <value name="AMOUNT">
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
+        </value>
+      </block>
+      <block type="logo_rotate">
+        <field name="DIRECTION">LT</field>
+        <value name="AMOUNT">
+          <block type="math_number">
+            <field name="NUM">90</field>
+          </block>
+        </value>
+      </block>
+      <block type="logo_circle">
+        <field name="METHOD">CIRCLE</field>
+        <value name="R">
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
+        </value>
+      </block>
+      <block type="logo_pen">
+        <field name="OP">PD</field>
+      </block>
+      <block type="logo_setcolor">
+        <field name="WHICH">SETPC</field>
+        <value name="COLOR">
+          <block type="colour_picker">
+            <field name="COLOUR">#000000</field>
+          </block>
+        </value>
+      </block>
+      <block type="logo_getcolor">
+        <field name="WHICH">PC</field>
+      </block>
+      <block type="logo_mode">
+        <field name="WHICH">WRAP</field>
+      </block>
+      <block type="logo_screen">
+        <field name="WHICH">CS</field>
+      </block>
+      <block type="logo_set">
+        <field name="WHICH">SETX</field>
+        <value name="VALUE">
+          <block type="math_number">
+            <field name="NUM">0</field>
+          </block>
+        </value>
+      </block>
+      <block type="logo_get">
+        <field name="WHICH">XCOR</field>
+      </block>
+    </category>
   </xml>
 
 </body>
