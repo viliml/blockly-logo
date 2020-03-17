@@ -473,6 +473,7 @@ Code.init = function() {
   Code.bindClick('trashButton',
       function() {Code.discard(); Code.renderContent();});
   Code.bindClick('runButton', Code.runJS);
+  Code.bindClick('saveButton', Code.saveToFile);
   // Disable the link button if page isn't backed by App Engine storage.
   var linkButton = document.getElementById('linkButton');
   if ('BlocklyStorage' in window) {
@@ -557,6 +558,7 @@ Code.initLanguage = function() {
   document.getElementById('linkButton').title = MSG['linkTooltip'];
   document.getElementById('runButton').title = MSG['runTooltip'];
   document.getElementById('trashButton').title = MSG['trashTooltip'];
+  document.getElementById('saveButton').title = 'Save generated code to file';
 };
 
 /**
@@ -593,6 +595,47 @@ Code.discard = function() {
     }
   }
 };
+
+/**
+ * Save generated code to file.
+ */
+Code.saveToFile = function() {
+  var content = document.getElementById('content_' + Code.selected);
+  if (content.id == 'content_xml') {
+    var ext = null;
+  } else if (content.id == 'content_javascript') {
+    var ext = 'js';
+  } else if (content.id == 'content_python') {
+    var ext = 'py';
+  } else if (content.id == 'content_php') {
+    var ext = 'php';
+  } else if (content.id == 'content_dart') {
+    var ext = 'dart';
+  } else if (content.id == 'content_lua') {
+    var ext = 'lua';
+  } else if (content.id == 'content_logo') {
+    var ext = 'lgo';
+  }
+  if (ext) {
+    var txt = content.textContent;
+    Code.createAndDownloadFile(txt, 'code.' + ext, 'text');
+  }
+}
+
+Code.createAndDownloadFile = function(contents, filename, fileType) {
+  var data = new Blob([contents], {type: 'text/' + fileType});
+  var clickEvent = new MouseEvent("click", {
+    "view": window,
+    "bubbles": true,
+    "cancelable": false
+  });
+
+  var a = document.createElement('a');
+  a.href = window.URL.createObjectURL(data);
+  a.download = filename;
+  a.textContent = 'Download file!';
+  a.dispatchEvent(clickEvent);
+}
 
 // Load the Code demo's language strings.
 document.write('<script src="msg/' + Code.LANG + '.js"></script>\n');

@@ -165,6 +165,9 @@ button {
 .run {
   background-position: -42px 0px;
 }
+.save {
+  background-position: -63px 0px;
+}
 
 @media (max-width: 710px) {
   .tab_collapse {
