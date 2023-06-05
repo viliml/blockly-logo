@@ -15,6 +15,7 @@ goog.module('Blockly.libraryBlocks');
 const colour = goog.require('Blockly.libraryBlocks.colour');
 const lists = goog.require('Blockly.libraryBlocks.lists');
 const logic = goog.require('Blockly.libraryBlocks.logic');
+const logo = goog.require('Blockly.libraryBlocks.logo');
 const loops = goog.require('Blockly.libraryBlocks.loops');
 const math = goog.require('Blockly.libraryBlocks.math');
 const procedures = goog.require('Blockly.libraryBlocks.procedures');
@@ -30,6 +31,7 @@ const BlockDefinition = Object;
 exports.colour = colour;
 exports.lists = lists;
 exports.logic = logic;
+exports.logo = logo;
 exports.loops = loops;
 exports.math = math;
 exports.procedures = procedures;
@@ -43,6 +45,6 @@ exports.variablesDynamic = variablesDynamic;
  * @type {!Object<string, !BlockDefinition>}
  */
 const blocks = Object.assign(
-    {}, colour.blocks, lists.blocks, logic.blocks, loops.blocks, math.blocks,
-    procedures.blocks, variables.blocks, variablesDynamic.blocks);
+    {}, colour.blocks, lists.blocks, logic.blocks, logo.blocks, loops.blocks,
+    math.blocks, procedures.blocks, variables.blocks, variablesDynamic.blocks);
 exports.blocks = blocks;

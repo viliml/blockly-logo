@@ -571,7 +571,7 @@ function getChunkOptions() {
     // Figure out which chunk this is by looking for one of the
     // known chunk entrypoints in chunkFiles.  N.B.: O(n*m).  :-(
     const chunk = chunks.find(
-        chunk => chunkFiles.find(f => f.endsWith('/' + chunk.entry)));
+        chunk => chunkFiles.find(f => f.endsWith('/' + posixPath(chunk.entry))));
     if (!chunk) throw new Error('Unable to identify chunk');
 
     // Replace nicknames with the names we chose.

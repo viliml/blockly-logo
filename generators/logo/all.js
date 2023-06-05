@@ -17,6 +17,7 @@ const moduleExports = goog.require('Blockly.Logo');
 goog.require('Blockly.Logo.colour');
 goog.require('Blockly.Logo.lists');
 goog.require('Blockly.Logo.logic');
+goog.require('Blockly.Logo.logo');
 goog.require('Blockly.Logo.loops');
 goog.require('Blockly.Logo.math');
 goog.require('Blockly.Logo.procedures');

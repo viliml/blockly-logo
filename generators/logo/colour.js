@@ -4,50 +4,47 @@
  */
 'use strict';
 
-goog.provide('Blockly.Logo.colour');
+goog.module('Blockly.Logo.colour');
 
-goog.require('Blockly.Logo');
+const {logoGenerator: Logo} = goog.require('Blockly.Logo');
 
 
-Blockly.Logo['colour_picker'] = function(block) {
+Logo['colour_picker'] = function(block) {
   // Colour picker.
   var c = block.getFieldValue('COLOUR');
   var r = parseInt(c.substring(1, 3), 16);
   var g = parseInt(c.substring(3, 5), 16);
   var b = parseInt(c.substring(5, 7), 16);
-  var code = '[' + r + ' ' + g + ' ' + b + ']'
-  return [code, Blockly.Logo.ORDER_ATOMIC];
+  var code = '[' + r + ' ' + g + ' ' + b + ']';
+  return [code, Logo.ORDER_ATOMIC];
 };
 
-Blockly.Logo['colour_random'] = function(block) {
+Logo['colour_random'] = function(block) {
   // Generate a random colour.
-  var code = "(list random 256 random 256 random 256)";
-  return [code, Blockly.Logo.ORDER_ATOMIC];
+  var code = '(list random 256 random 256 random 256)';
+  return [code, Logo.ORDER_ATOMIC];
 };
 
-Blockly.Logo['colour_rgb'] = function(block) {
+Logo['colour_rgb'] = function(block) {
   // Compose a colour from RGB components expressed as percentages.
-  var red = Blockly.Logo.valueToCode(block, 'RED',
-      Blockly.Logo.ORDER_MULTIPLICATION) || 0;
-  var green = Blockly.Logo.valueToCode(block, 'GREEN',
-      Blockly.Logo.ORDER_MULTIPLICATION) || 0;
-  var blue = Blockly.Logo.valueToCode(block, 'BLUE',
-      Blockly.Logo.ORDER_MULTIPLICATION) || 0;
+  var red = Logo.valueToCode(block, 'RED', Logo.ORDER_MULTIPLICATION) || 0;
+  var green = Logo.valueToCode(block, 'GREEN', Logo.ORDER_MULTIPLICATION) || 0;
+  var blue = Logo.valueToCode(block, 'BLUE', Logo.ORDER_MULTIPLICATION) || 0;
   var code = '(list 2.55 * ' + red + ' 2.55 * ' + green + ' 2.55 * ' + blue + ')';
-  return [code, Blockly.Logo.ORDER_ATOMIC];
+  return [code, Logo.ORDER_ATOMIC];
 };
 /*
-Blockly.Logo['colour_blend'] = function(block) {
+Logo['colour_blend'] = function(block) {
   // Blend two colours together.
-  var c1 = Blockly.Logo.valueToCode(block, 'COLOUR1',
-      Blockly.Logo.ORDER_COMMA) || '\'#000000\'';
-  var c2 = Blockly.Logo.valueToCode(block, 'COLOUR2',
-      Blockly.Logo.ORDER_COMMA) || '\'#000000\'';
-  var ratio = Blockly.Logo.valueToCode(block, 'RATIO',
-      Blockly.Logo.ORDER_COMMA) || 0.5;
-  var functionName = Blockly.Logo.provideFunction_(
+  var c1 = Logo.valueToCode(block, 'COLOUR1',
+      Logo.ORDER_COMMA) || '\'#000000\'';
+  var c2 = Logo.valueToCode(block, 'COLOUR2',
+      Logo.ORDER_COMMA) || '\'#000000\'';
+  var ratio = Logo.valueToCode(block, 'RATIO',
+      Logo.ORDER_COMMA) || 0.5;
+  var functionName = Logo.provideFunction_(
       'colourBlend',
-      ['function ' + Blockly.Logo.FUNCTION_NAME_PLACEHOLDER_ +
+      ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ +
           '(c1, c2, ratio) {',
        '  ratio = Math.max(Math.min(Number(ratio), 1), 0);',
        '  var r1 = parseInt(c1.substring(1, 3), 16);',
@@ -65,5 +62,5 @@ Blockly.Logo['colour_blend'] = function(block) {
        '  return \'#\' + r + g + b;',
        '}']);
   var code = functionName + '(' + c1 + ', ' + c2 + ', ' + ratio + ')';
-  return [code, Blockly.Logo.ORDER_FUNCTION_CALL];
+  return [code, Logo.ORDER_FUNCTION_CALL];
 };*/

@@ -4,14 +4,12 @@
  */
 'use strict';
 
-goog.provide('Blockly.Logo.variablesDynamic');
+goog.module('Blockly.Logo.variablesDynamic');
 
-goog.require('Blockly.Logo');
+const {logoGenerator: Logo} = goog.require('Blockly.Logo');
 goog.require('Blockly.Logo.variables');
 
 
 // Logo is dynamically typed.
-Blockly.Logo['variables_get_dynamic'] =
-    Blockly.Logo['variables_get'];
-Blockly.Logo['variables_set_dynamic'] =
-    Blockly.Logo['variables_set'];
+Logo['variables_get_dynamic'] = Logo['variables_get'];
+Logo['variables_set_dynamic'] = Logo['variables_set'];
