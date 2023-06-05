@@ -329,7 +329,7 @@ async function generators() {
 
     await runGeneratorsInBrowser(OUTPUT_DIR);
 
-    const generatorSuffixes = ['js', 'py', 'dart', 'lua', 'php'];
+    const generatorSuffixes = ['js', 'py', 'dart', 'lua', 'php', 'lgo'];
     let failed = 0;
     generatorSuffixes.forEach((suffix) => {
       failed += checkResult(suffix);

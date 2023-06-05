@@ -302,6 +302,17 @@
     "./generators/dart/lists.js",
     "./generators/dart/colour.js",
     "./generators/dart.js",
-    "./generators/dart/all.js"
+    "./generators/dart/all.js",
+    "./generators/logo/variables_dynamic.js",
+    "./generators/logo/variables.js",
+    "./generators/logo/text.js",
+    "./generators/logo/procedures.js",
+    "./generators/logo/math.js",
+    "./generators/logo/loops.js",
+    "./generators/logo/logic.js",
+    "./generators/logo/lists.js",
+    "./generators/logo/colour.js",
+    "./generators/logo.js",
+    "./generators/logo/all.js"
   ]
 }

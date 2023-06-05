@@ -186,6 +186,9 @@ function packageNode() {
       }, {
         name: 'BlocklyDart',
         cjs: './dart',
+      }, {
+        name: 'BlocklyLogo',
+        cjs: './logo',
       }]))
     .pipe(gulp.rename('node.js'))
     .pipe(gulp.dest(RELEASE_DIR));
@@ -268,7 +271,15 @@ function packageDart() {
  * @example import 'blockly/php';
  */
 function packagePHP() {
-  return packageGenerator('php_compressed.js', 'php.js', 'PHP');
+    return packageGenerator('php_compressed.js', 'php.js', 'PHP');
+};
+
+/**
+ * This task wraps logo_compressed.js into a UMD module.
+ * @example import 'blockly/logo';
+ */
+function packageLogo() {
+    return packageGenerator('logo_compressed.js', 'logo.js', 'Logo');
 };
 
 /**
@@ -389,6 +400,7 @@ const package = gulp.series(
         packageLua,
         packageDart,
         packagePHP,
+        packageLogo,
         packageMedia,
         gulp.series(packageLocales, packageUMDBundle),
         packageJSON,

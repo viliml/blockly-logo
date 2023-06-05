@@ -143,6 +143,13 @@ const chunks = [
     exports: 'module$exports$Blockly$Dart',
     reexport: 'Blockly.Dart',
     reexportOnly: 'dartGenerator',
+  },
+  {
+    name: 'logo',
+    entry: path.join(TSC_OUTPUT_DIR, 'generators', 'logo', 'all.js'),
+    exports: 'module$exports$Blockly$Logo',
+    reexport: 'Blockly.Logo',
+    reexportOnly: 'logoGenerator',
   }
 ];
 
