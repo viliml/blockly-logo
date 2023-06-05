@@ -450,12 +450,16 @@ function test_number_properties()
   assertEquals(42 % 2 == 0, true, 'even')
   assertEquals(42.1 % 2 == 1, false, 'odd')
   assertEquals(math_isPrime(5), true, 'prime 5')
+  assertEquals(math_isPrime(5 + 2), true, 'prime 5 + 2 (extra parentheses)')
   assertEquals(math_isPrime(25), false, 'prime 25')
   assertEquals(math_isPrime(-31.1), false, 'prime negative')
   assertEquals(math.pi % 1 == 0, false, 'whole')
   assertEquals(math.huge > 0, true, 'positive')
+  assertEquals(5 + 2 > 0, true, '5 + 2 is positive (extra parentheses)')
   assertEquals(-42 < 0, true, 'negative')
+  assertEquals(3 + 2 < 0, false, '3 + 2 is negative (extra parentheses)')
   assertEquals(42 % 2 == 0, true, 'divisible')
+  assertEquals(not nil, true, 'divisible by 0')
 end
 
 
@@ -521,23 +525,23 @@ function math_median(t)
   if #t == 0 then
     return 0
   end
-  local temp={}
+  local temp = {}
   for _, v in ipairs(t) do
-    if type(v) == "number" then
+    if type(v) == 'number' then
       table.insert(temp, v)
     end
   end
   table.sort(temp)
   if #temp % 2 == 0 then
-    return (temp[#temp/2] + temp[(#temp/2)+1]) / 2
+    return (temp[#temp / 2] + temp[(#temp / 2) + 1]) / 2
   else
-    return temp[math.ceil(#temp/2)]
+    return temp[math.ceil(#temp / 2)]
   end
 end
 
 function math_modes(t)
   -- Source: http://lua-users.org/wiki/SimpleStats
-  local counts={}
+  local counts = {}
   for _, v in ipairs(t) do
     if counts[v] == nil then
       counts[v] = 1
@@ -551,7 +555,7 @@ function math_modes(t)
       biggestCount = v
     end
   end
-  local temp={}
+  local temp = {}
   for k, v in pairs(counts) do
     if v == biggestCount then
       table.insert(temp, k)
@@ -703,9 +707,8 @@ function firstIndexOf(str, substr)
   local i = string.find(str, substr, 1, true)
   if i == nil then
     return 0
-  else
-    return i
   end
+  return i
 end
 
 function lastIndexOf(str, substr)
@@ -1012,6 +1015,21 @@ function test_replace()
 end
 
 
+-- Tests the "multiline" block.
+function test_multiline()
+  assertEquals('', '', 'no text')
+  assertEquals('Google', 'Google', 'simple')
+  assertEquals('paragraph' .. '\n' ..
+  'with newlines' .. '\n' ..
+  'yup', 'paragraph' .. '\n' ..
+  'with newlines' .. '\n' ..
+  'yup', 'no compile error with newlines')
+  assertEquals(text_count('bark bark' .. '\n' ..
+  'bark bark bark' .. '\n' ..
+  'bark bark bark bark', 'bark'), 9, 'count with newlines')
+end
+
+
 -- Checks that the number of calls is one in order
 -- to confirm that a function was only called once.
 function check_number_of_calls2(test_name)
@@ -1123,13 +1141,6 @@ function test_get_lists_simple()
 end
 
 
--- Creates a list for use with the get test.
-function get_star_wars()
-  number_of_calls = number_of_calls + 1
-  return {'Kirk', 'Spock', 'McCoy'}
-end
-
-
 function list_get_last(t)
   return t[#t]
 end
@@ -1141,6 +1152,26 @@ end
 function list_get_from_end(t, at)
   return t[#t + 1 - at]
 end
+
+-- Tests the "get" block with create list call.
+function test_get_lists_create_list()
+  assertEquals(({'Kirk', 'Spock', 'McCoy'})[1], 'Kirk', 'get first create list')
+  assertEquals(list_get_last(({'Kirk', 'Spock', 'McCoy'})), 'McCoy', 'get last simple')
+  assertEquals(first_index({'Kirk', 'Spock', 'McCoy'}, list_get_random(({'Kirk', 'Spock', 'McCoy'}))) > 0, true, 'get random simple')
+  assertEquals(({'Kirk', 'Spock', 'McCoy'})[2], 'Spock', 'get # simple')
+  assertEquals(({'Kirk', 'Spock', 'McCoy'})[true and 2 or nil], 'Spock', 'get # order simple')
+  assertEquals(list_get_from_end(({'Kirk', 'Spock', 'McCoy'}), 3), 'Kirk', 'get #-end simple')
+  -- The order for index for #-end is addition because this will catch errors in generators where most perform the operation ... - index.
+  assertEquals(list_get_from_end(({'Kirk', 'Spock', 'McCoy'}), 0 + 3), 'Kirk', 'get #-end order simple')
+end
+
+
+-- Creates a list for use with the get test.
+function get_star_wars()
+  number_of_calls = number_of_calls + 1
+  return {'Kirk', 'Spock', 'McCoy'}
+end
+
 
 -- Tests the "get" block with a function call.
 function test_get_lists_complex()
@@ -1815,6 +1846,7 @@ test_trim()
 test_count_text()
 test_text_reverse()
 test_replace()
+test_multiline()
 print(unittest_report())
 unittestResults = nil
 
@@ -1826,6 +1858,7 @@ test_lists_length()
 test_find_lists_simple()
 test_find_lists_complex()
 test_get_lists_simple()
+test_get_lists_create_list()
 test_get_lists_complex()
 test_getRemove()
 test_remove()

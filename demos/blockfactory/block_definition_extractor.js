@@ -17,8 +17,6 @@
  *
  * The <code>exampleBlocklyBlock</code> is usually the block loaded into the
  * preview workspace after manually entering the block definition.
- *
- * @author JC-Orozco (Juan Carlos Orozco), AnmAtAnm (Andrew n marshall)
  */
 'use strict';
 
@@ -49,7 +47,7 @@ BlockDefinitionExtractor.buildBlockFactoryWorkspace = function(block) {
  * inner text.
  *
  * @param {string} name New element tag name.
- * @param {!Object.<string, string>=} opt_attrs Optional list of attributes.
+ * @param {!Object<string, string>=} opt_attrs Optional list of attributes.
  * @param {string=} opt_text Optional inner text.
  * @return {!Element} The newly created element.
  * @private
@@ -112,7 +110,7 @@ BlockDefinitionExtractor.buildTypeConstraintBlockForConnection_ =
     } else if (connection.check_.length === 1) {
       typeBlock = BlockDefinitionExtractor.buildBlockForType_(
           connection.check_[0]);
-    } else if (connection.check_.length > 1 ) {
+    } else if (connection.check_.length > 1) {
       typeBlock = BlockDefinitionExtractor.typeGroup_(connection.check_);
     }
   } else {
@@ -323,7 +321,7 @@ BlockDefinitionExtractor.input_ = function(input, align) {
 
 /**
  * Constructs a sequence <block> elements representing the field definition.
- * @param {Array.<Blockly.Field>} fieldRow A list of fields in a Blockly.Input.
+ * @param {Array<Blockly.Field>} fieldRow A list of fields in a Blockly.Input.
  * @return {Element} The fist <block> element of the sequence
  *     (and the root of the constructed DOM).
  * @private
@@ -556,7 +554,7 @@ BlockDefinitionExtractor.buildFieldColour_ =
 };
 
 /**
- * Creates a <block> element representing a FieldVaraible definition.
+ * Creates a <block> element representing a FieldVariable definition.
  *
  * @param {string} fieldName The identifying name of the field.
  * @param {string} varName The variables
@@ -579,7 +577,7 @@ BlockDefinitionExtractor.buildFieldVariable_ = function(fieldName, varName) {
  * @param {string} src The URL of the field image.
  * @param {number} width The pixel width of the source image
  * @param {number} height The pixel height of the source image.
- * @param {string} alt Alterante text to describe image.
+ * @param {string} alt Alternate text to describe image.
  * @private
  */
 BlockDefinitionExtractor.buildFieldImage_ =
@@ -600,7 +598,7 @@ BlockDefinitionExtractor.buildFieldImage_ =
 /**
  * Creates a <block> element a group of allowed connection constraint types.
  *
- * @param {Array.<string>} types List of type names in this group.
+ * @param {Array<string>} types List of type names in this group.
  * @return {Element} The <block> element representing the group, with child
  *     types attached.
  * @private
@@ -693,7 +691,7 @@ BlockDefinitionExtractor.typeList_ = function() {
  * Creates a <block> element representing the given custom connection
  * constraint type name.
  *
- * @param {string} type The connection constratin type name.
+ * @param {string} type The connection constraint type name.
  * @return {Element} The <block> element representing a custom input type
  *     constraint.
  * @private
@@ -707,7 +705,7 @@ BlockDefinitionExtractor.typeOther_ = function(type) {
 };
 
 /**
- * Creates a block Element for the color_hue block, with the given hue.
+ * Creates a block Element for the colour_hue block, with the given hue.
  * @param hue {number} The hue value, from 0 to 360.
  * @return {Element} The <block> Element representing a colour_hue block
  *     with the given hue.
@@ -717,7 +715,7 @@ BlockDefinitionExtractor.colourBlockFromHue_ = function(hue) {
   var colourBlock = BlockDefinitionExtractor.newDomElement_(
       'block', {type: 'colour_hue'});
   colourBlock.append(BlockDefinitionExtractor.newDomElement_('mutation', {
-    colour: Blockly.hueToRgb(hue)
+    colour: Blockly.utils.colour.hueToHex(hue)
   }));
   colourBlock.append(BlockDefinitionExtractor.newDomElement_(
       'field', {name: 'HUE'}, hue.toString()));

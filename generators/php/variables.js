@@ -1,43 +1,32 @@
 /**
  * @license
  * Copyright 2015 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * @fileoverview Generating PHP for variable blocks.
- * @author daarond@gmail.com (Daaron Dwyer)
  */
 'use strict';
 
-goog.provide('Blockly.PHP.variables');
+goog.module('Blockly.PHP.variables');
 
-goog.require('Blockly.PHP');
+const {NameType} = goog.require('Blockly.Names');
+const {phpGenerator: PHP} = goog.require('Blockly.PHP');
 
 
-Blockly.PHP['variables_get'] = function(block) {
-    // Variable getter.
-    var code = Blockly.PHP.variableDB_.getName(block.getFieldValue('VAR'),
-        Blockly.VARIABLE_CATEGORY_NAME);
-    return [code, Blockly.PHP.ORDER_ATOMIC];
+PHP['variables_get'] = function(block) {
+  // Variable getter.
+  const code =
+      PHP.nameDB_.getName(block.getFieldValue('VAR'), NameType.VARIABLE);
+  return [code, PHP.ORDER_ATOMIC];
 };
 
-Blockly.PHP['variables_set'] = function(block) {
-    // Variable setter.
-    var argument0 = Blockly.PHP.valueToCode(block, 'VALUE',
-            Blockly.PHP.ORDER_ASSIGNMENT) || '0';
-    var varName = Blockly.PHP.variableDB_.getName(
-        block.getFieldValue('VAR'), Blockly.VARIABLE_CATEGORY_NAME);
-    return varName + ' = ' + argument0 + ';\n';
+PHP['variables_set'] = function(block) {
+  // Variable setter.
+  const argument0 =
+      PHP.valueToCode(block, 'VALUE', PHP.ORDER_ASSIGNMENT) || '0';
+  const varName =
+      PHP.nameDB_.getName(block.getFieldValue('VAR'), NameType.VARIABLE);
+  return varName + ' = ' + argument0 + ';\n';
 };

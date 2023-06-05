@@ -6,8 +6,8 @@
   <title>Blockly Demo: Block Factory</title>
   <script src="/storage.js"></script>
   <script src="factory.js"></script>
-  <script src="../../blockly_compressed.js"></script>
-  <script src="../../msg/js/en.js"></script>
+  <script src="../../dist/blockly_compressed.js"></script>
+  <script src="../../build/msg/en.js"></script>
   <script src="blocks.js"></script>
   <style>
     html, body {
@@ -88,7 +88,7 @@
       display: none;
     }
   </style>
-  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
 </head>
 <body>
   <table>
@@ -196,11 +196,6 @@
       <block type="field_dropdown"></block>
       <block type="field_checkbox"></block>
       <block type="field_colour"></block>
-      <!--
-      Date picker commented out since it increases footprint by 60%.
-      Add it only if you need it.  See also goog.require in blockly.js.
-      <block type="field_date"></block>
-      -->
       <block type="field_variable"></block>
       <block type="field_image"></block>
     </category>
