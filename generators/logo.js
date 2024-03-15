@@ -21,65 +21,68 @@
  */
 'use strict';
 
-goog.provide('Blockly.Logo');
+goog.module('Blockly.Logo');
 
-goog.require('Blockly.Generator');
-goog.require('Blockly.utils.global');
-goog.require('Blockly.utils.string');
+const stringUtils = goog.require('Blockly.utils.string');
+const {Block} = goog.requireType('Blockly.Block');
+const {CodeGenerator} = goog.require('Blockly.CodeGenerator');
+const {inputTypes} = goog.require('Blockly.inputTypes');
+const {Names, NameType} = goog.require('Blockly.Names');
+const {Workspace} = goog.requireType('Blockly.Workspace');
 
 
 /**
  * Logo code generator.
- * @type {!Blockly.Generator}
+ * @type {!CodeGenerator}
  */
-Blockly.Logo = new Blockly.Generator('Logo');
+const Logo = new CodeGenerator('Logo');
 
 /**
  * Order of operation ENUMs.
  */
-Blockly.Logo.ORDER_ATOMIC = 0;				// ()
-Blockly.Logo.ORDER_UNARY_NEGATION = 1;		// -
-Blockly.Logo.ORDER_MULTIPLICATION = 2.1;	// *
-Blockly.Logo.ORDER_DIVISION = 2.2;			// /
-Blockly.Logo.ORDER_SUBTRACTION = 3.1;		// -
-Blockly.Logo.ORDER_ADDITION = 3.2;			// +
-Blockly.Logo.ORDER_COMPARISON = 4;			// = < > <= >= <>
-Blockly.Logo.ORDER_PROCEDURE = 5;			// pr "|Hello World|
-Blockly.Logo.ORDER_NONE = 99;				// ...
+Logo.ORDER_ATOMIC = 0;				// ()
+Logo.ORDER_UNARY_NEGATION = 1;		// -
+Logo.ORDER_MULTIPLICATION = 2.1;	// *
+Logo.ORDER_DIVISION = 2.2;			// /
+Logo.ORDER_SUBTRACTION = 3.1;		// -
+Logo.ORDER_ADDITION = 3.2;			// +
+Logo.ORDER_COMPARISON = 4;			// = < > <= >= <>
+Logo.ORDER_PROCEDURE = 5;			// pr "|Hello World|
+Logo.ORDER_NONE = 99;				// ...
 
 /**
  * List of outer-inner pairings that do NOT require parentheses.
  * @type {!Array.<!Array.<number>>}
  */
-Blockly.Logo.ORDER_OVERRIDES = [
+Logo.ORDER_OVERRIDES = [
   // a * (b * c) -> a * b * c
-  [Blockly.Logo.ORDER_MULTIPLICATION, Blockly.Logo.ORDER_MULTIPLICATION],
+  [Logo.ORDER_MULTIPLICATION, Logo.ORDER_MULTIPLICATION],
   // a + (b + c) -> a + b + c
-  [Blockly.Logo.ORDER_ADDITION, Blockly.Logo.ORDER_ADDITION]//,
+  [Logo.ORDER_ADDITION, Logo.ORDER_ADDITION]//,
   
   //pr (abs a) -> pr abs a
-  //[Blockly.Logo.ORDER_PROCEDURE, Blockly.Logo.ORDER_PROCEDURE]
+  //[Logo.ORDER_PROCEDURE, Logo.ORDER_PROCEDURE]
 ];
 
 /**
  * Initialise the database of variable names.
- * @param {!Blockly.Workspace} workspace Workspace to generate code from.
+ * @param {!Workspace} workspace Workspace to generate code from.
  */
-Blockly.Logo.init = function(workspace) {
+Logo.init = function(workspace) {
   // Create a dictionary of definitions to be printed before the code.
-  Blockly.Logo.definitions_ = Object.create(null);
+  Logo.definitions_ = Object.create(null);
   // Create a dictionary mapping desired function names in definitions_
   // to actual function names (to avoid collisions with user functions).
-  Blockly.Logo.functionNames_ = Object.create(null);
+  Logo.functionNames_ = Object.create(null);
 
-  if (!Blockly.Logo.variableDB_) {
-    Blockly.Logo.variableDB_ =
-        new Blockly.Names(Blockly.Logo.RESERVED_WORDS_);
+  if (!Logo.variableDB_) {
+    Logo.variableDB_ =
+        new Names(Logo.RESERVED_WORDS_);
   } else {
-    Blockly.Logo.variableDB_.reset();
+    Logo.variableDB_.reset();
   }
 
-  Blockly.Logo.variableDB_.setVariableMap(workspace.getVariableMap());
+  Logo.variableDB_.setVariableMap(workspace.getVariableMap());
 };
 
 /**
@@ -87,16 +90,16 @@ Blockly.Logo.init = function(workspace) {
  * @param {string} code Generated code.
  * @return {string} Completed code.
  */
-Blockly.Logo.finish = function(code) {
+Logo.finish = function(code) {
   // Convert the definitions dictionary into a list.
   var definitions = [];
-  for (var name in Blockly.Logo.definitions_) {
-    definitions.push(Blockly.Logo.definitions_[name]);
+  for (var name in Logo.definitions_) {
+    definitions.push(Logo.definitions_[name]);
   }
   // Clean up temporary data.
-  delete Blockly.Logo.definitions_;
-  delete Blockly.Logo.functionNames_;
-  Blockly.Logo.variableDB_.reset();
+  delete Logo.definitions_;
+  delete Logo.functionNames_;
+  Logo.variableDB_.reset();
   return definitions.join('\n\n') + '\n\n\n' + code;
 };
 
@@ -106,7 +109,7 @@ Blockly.Logo.finish = function(code) {
  * @param {string} line Line of generated code.
  * @return {string} Legal line of code.
  */
-Blockly.Logo.scrubNakedValue = function(line) {
+Logo.scrubNakedValue = function(line) {
   return 'ignore ' + line + '\n';
 };
 
@@ -117,7 +120,7 @@ Blockly.Logo.scrubNakedValue = function(line) {
  * @return {string} Logo string.
  * @private
  */
-Blockly.Logo.quote_ = function(string) {
+Logo.quote_ = function(string) {
   string = string.replace(/\\/g, '\\\\')
                  .replace(/\n/g, '\\\n')
                  .replace(/;/g, '\\;')
@@ -134,10 +137,10 @@ Blockly.Logo.quote_ = function(string) {
  * @return {string} Logo string.
  * @private
  */
-Blockly.Logo.multiline_quote_ = function(string) {
+Logo.multiline_quote_ = function(string) {
   // Can't use goog.string.quote since Google's style guide recommends
   // JS string literals use single quotes.
-  var lines = string.split(/\n/g).map(Blockly.Logo.quote_);
+  var lines = string.split(/\n/g).map(Logo.quote_);
   return lines.join('\\\n');
 };
 
@@ -145,74 +148,74 @@ Blockly.Logo.multiline_quote_ = function(string) {
  * Common tasks for generating Logo from blocks.
  * Handles comments for the specified block and any connected value blocks.
  * Calls any statements following this block.
- * @param {!Blockly.Block} block The current block.
+ * @param {!Block} block The current block.
  * @param {string} code The Logo code created for this block.
  * @param {boolean=} opt_thisOnly True to generate code for only this statement.
  * @return {string} Logo code with comments and subsequent blocks added.
  * @private
  */
-Blockly.Logo.scrub_ = function(block, code, opt_thisOnly) {
+Logo.scrub_ = function(block, code, opt_thisOnly) {
   var commentCode = '';
   // Only collect comments for blocks that aren't inline.
   if (!block.outputConnection || !block.outputConnection.targetConnection) {
     // Collect comment for this block.
     var comment = block.getCommentText();
     if (comment) {
-      comment = Blockly.utils.string.wrap(comment,
-          Blockly.Logo.COMMENT_WRAP - 3);
-      commentCode += Blockly.Logo.prefixLines(comment + '\n', '; ');
+      comment = stringUtils.wrap(comment,
+          Logo.COMMENT_WRAP - 3);
+      commentCode += Logo.prefixLines(comment + '\n', '; ');
     }
     // Collect comments for all value arguments.
     // Don't collect comments for nested statements.
     for (var i = 0; i < block.inputList.length; i++) {
-      if (block.inputList[i].type == Blockly.INPUT_VALUE) {
+      if (block.inputList[i].type == inputTypes.VALUE) {
         var childBlock = block.inputList[i].connection.targetBlock();
         if (childBlock) {
-          comment = Blockly.Logo.allNestedComments(childBlock);
+          comment = Logo.allNestedComments(childBlock);
           if (comment) {
-            commentCode += Blockly.Logo.prefixLines(comment, '; ');
+            commentCode += Logo.prefixLines(comment, '; ');
           }
         }
       }
     }
   }
   var nextBlock = block.nextConnection && block.nextConnection.targetBlock();
-  var nextCode = opt_thisOnly ? '' : Blockly.Logo.blockToCode(nextBlock);
+  var nextCode = opt_thisOnly ? '' : Logo.blockToCode(nextBlock);
   return commentCode + code + nextCode;
 };
 
 /**
  * Gets a property and adjusts the value while taking into account indexing.
- * @param {!Blockly.Block} block The block.
+ * @param {!Block} block The block.
  * @param {string} atId The property ID of the element to get.
  * @param {number=} opt_delta Value to add.
  * @param {boolean=} opt_negate Whether to negate the value.
  * @param {number=} opt_order The highest order acting on this value.
  * @return {string|number}
  */
-Blockly.Logo.getAdjusted = function(block, atId, opt_delta, opt_negate,
+Logo.getAdjusted = function(block, atId, opt_delta, opt_negate,
     opt_order) {
   var delta = opt_delta || 0;
-  var order = opt_order || Blockly.Logo.ORDER_NONE;
+  var order = opt_order || Logo.ORDER_NONE;
   if (!block.workspace.options.oneBasedIndex) {
     delta++;
   }
   var defaultAtIndex = block.workspace.options.oneBasedIndex ? '1' : '0';
   if (delta > 0) {
-    var at = Blockly.Logo.valueToCode(block, atId,
-        Blockly.Logo.ORDER_ADDITION) || defaultAtIndex;
+    var at = Logo.valueToCode(block, atId,
+        Logo.ORDER_ADDITION) || defaultAtIndex;
   } else if (delta < 0) {
-    var at = Blockly.Logo.valueToCode(block, atId,
-        Blockly.Logo.ORDER_SUBTRACTION) || defaultAtIndex;
+    var at = Logo.valueToCode(block, atId,
+        Logo.ORDER_SUBTRACTION) || defaultAtIndex;
   } else if (opt_negate) {
-    var at = Blockly.Logo.valueToCode(block, atId,
-        Blockly.Logo.ORDER_UNARY_NEGATION) || defaultAtIndex;
+    var at = Logo.valueToCode(block, atId,
+        Logo.ORDER_UNARY_NEGATION) || defaultAtIndex;
   } else {
-    var at = Blockly.Logo.valueToCode(block, atId, order) ||
+    var at = Logo.valueToCode(block, atId, order) ||
         defaultAtIndex;
   }
 
-  if (Blockly.isNumber(at)) {
+  if (stringUtils.isNumber(at)) {
     // If the index is a naked number, adjust it right now.
     at = Number(at) + delta;
     if (opt_negate) {
@@ -222,10 +225,10 @@ Blockly.Logo.getAdjusted = function(block, atId, opt_delta, opt_negate,
     // If the index is dynamic, adjust it in code.
     if (delta > 0) {
       at = at + ' + ' + delta;
-      var innerOrder = Blockly.Logo.ORDER_ADDITION;
+      var innerOrder = Logo.ORDER_ADDITION;
     } else if (delta < 0) {
       at = at + ' - ' + -delta;
-      var innerOrder = Blockly.Logo.ORDER_SUBTRACTION;
+      var innerOrder = Logo.ORDER_SUBTRACTION;
     }
     if (opt_negate) {
       if (delta) {
@@ -233,7 +236,7 @@ Blockly.Logo.getAdjusted = function(block, atId, opt_delta, opt_negate,
       } else {
         at = '-' + at;
       }
-      var innerOrder = Blockly.Logo.ORDER_UNARY_NEGATION;
+      var innerOrder = Logo.ORDER_UNARY_NEGATION;
     }
     innerOrder = Math.floor(innerOrder);
     order = Math.floor(order);
@@ -243,3 +246,5 @@ Blockly.Logo.getAdjusted = function(block, atId, opt_delta, opt_negate,
   }
   return at;
 };
+
+exports.logoGenerator = Logo;

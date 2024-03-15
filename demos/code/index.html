@@ -7,14 +7,14 @@
   <title>Blockly Demo:</title>
   <link rel="stylesheet" href="style.css">
   <script src="/storage.js"></script>
-  <script src="../../blockly_compressed.js"></script>
-  <script src="../../blocks_compressed.js"></script>
-  <script src="../../javascript_compressed.js"></script>
-  <script src="../../python_compressed.js"></script>
-  <script src="../../php_compressed.js"></script>
-  <script src="../../lua_compressed.js"></script>
-  <script src="../../dart_compressed.js"></script>
-  <script src="../../logo_compressed.js"></script>
+  <script src="../../dist/blockly_compressed.js"></script>
+  <script src="../../dist/blocks_compressed.js"></script>
+  <script src="../../dist/javascript_compressed.js"></script>
+  <script src="../../dist/python_compressed.js"></script>
+  <script src="../../dist/php_compressed.js"></script>
+  <script src="../../dist/lua_compressed.js"></script>
+  <script src="../../dist/dart_compressed.js"></script>
+  <script src="../../dist/logo_compressed.js"></script>
   <script src="code.js"></script>
 </head>
 <body>
@@ -28,6 +28,7 @@
       </td>
       <td class="farSide">
         <select id="languageMenu"></select>
+        <a class="privacyLink" href="https://policies.google.com/privacy">Privacy</a>
       </td>
     </tr>
     <tr>
@@ -49,6 +50,8 @@
             <td id="tab_logo" class="taboff tab_collapse">Logo</td>
             <td class="tabmin tab_collapse">&nbsp;</td>
             <td id="tab_xml" class="taboff tab_collapse">XML</td>
+            <td class="tabmin tab_collapse">&nbsp;</td>
+            <td id="tab_json" class="taboff tab_collapse">JSON</td>
             <td class="tabmin">&nbsp;</td>
             <td id="tab_code" class="taboff">
               <select id="code_menu"></select>
@@ -84,6 +87,7 @@
   <pre id="content_dart" class="content prettyprint lang-dart"></pre>
   <pre id="content_logo" class="content prettyprint lang-logo"></pre>
   <textarea id="content_xml" class="content" wrap="off"></textarea>
+  <textarea id="content_json" class="content" wrap="off"></textarea>
 
   <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
     <category name="%{BKY_CATLOGIC}" colour="%{BKY_LOGIC_HUE}">

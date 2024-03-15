@@ -7,18 +7,17 @@
  * exception is end-of-line comments, which the scraper will remove.
  * @author Vilim Lendvaj
  */
-'use strict'
+'use strict';
 
-goog.provide('Blockly.Blocks.logo');  // Deprecated
-goog.provide('Blockly.Constants.logo');
+goog.module('Blockly.libraryBlocks.logo');
 
-goog.require('Blockly');
-goog.require('Blockly.Blocks');
-goog.require('Blockly.FieldDropdown');
-goog.require('Blockly.FieldLabel');
-goog.require('Blockly.FieldNumber');
+const {createBlockDefinitionsFromJsonArray, defineBlocks} = goog.require('Blockly.common');
 
-Blockly.defineBlocksWithJsonArray([
+/**
+ * A dictionary of the block definitions provided by this module.
+ * @type {!Object<string, !BlockDefinition>}
+ */
+const blocks = createBlockDefinitionsFromJsonArray([
 {
   "type": "logo_move",
   "message0": "move %1 by %2",
@@ -29,25 +28,25 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "forward",
-          "FD"
+          "FD",
         ],
         [
           "backward",
-          "BK"
-        ]
-      ]
+          "BK",
+        ],
+      ],
     },
     {
       "type": "input_value",
       "name": "AMOUNT",
-      "check": "Number"
-    }
+      "check": "Number",
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_rotate",
@@ -59,41 +58,41 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "left",
-          "LT"
+          "LT",
         ],
         [
           "right",
-          "RT"
+          "RT",
         ],
         [
           "pitch up",
-          "UP"
+          "UP",
         ],
         [
           "pitch down",
-          "DOWN"
+          "DOWN",
         ],
         [
           "roll left",
-          "RL"
+          "RL",
         ],
         [
           "roll right",
-          "RR"
-        ]
-      ]
+          "RR",
+        ],
+      ],
     },
     {
       "type": "input_value",
       "name": "AMOUNT",
-      "check": "Number"
-    }
+      "check": "Number",
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_circle",
@@ -105,25 +104,25 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "from center",
-          "CIRCLE"
+          "CIRCLE",
         ],
         [
           "around edge",
-          "CIRCLE2"
-        ]
-      ]
+          "CIRCLE2",
+        ],
+      ],
     },
     {
       "type": "input_value",
       "name": "R",
-      "check": "Number"
-    }
+      "check": "Number",
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_pen",
@@ -135,36 +134,36 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "down",
-          "PD"
+          "PD",
         ],
         [
           "up",
-          "PU"
+          "PU",
         ],
         [
           "paint",
-          "PPT"
+          "PPT",
         ],
         [
           "erase",
-          "PE"
+          "PE",
         ],
         [
           "normal",
-          "PENNORMAL"
+          "PENNORMAL",
         ],
         [
           "reverse",
-          "PX"
-        ]
-      ]
-    }
+          "PX",
+        ],
+      ],
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_setcolor",
@@ -176,33 +175,33 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "pen",
-          "SETPC"
+          "SETPC",
         ],
         [
           "fill",
-          "SETFC"
+          "SETFC",
         ],
         [
           "pixel",
-          "SETPIXEL"
+          "SETPIXEL",
         ],
         [
           "screen",
-          "SETSC"
-        ]
-      ]
+          "SETSC",
+        ],
+      ],
     },
     {
       "type": "input_value",
       "name": "COLOR",
-      "check": "Colour"
-    }
+      "check": "Colour",
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_getcolor",
@@ -214,27 +213,27 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "pen",
-          "PC"
+          "PC",
         ],
         [
           "fill",
-          "FLOODCOLOR"
+          "FLOODCOLOR",
         ],
         [
           "pixel",
-          "PIXEL"
+          "PIXEL",
         ],
         [
           "screen",
-          "SCREENCOLOR"
-        ]
-      ]
-    }
+          "SCREENCOLOR",
+        ],
+      ],
+    },
   ],
   "output": "Colour",
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_mode",
@@ -246,28 +245,28 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "wrap",
-          "WRAP"
+          "WRAP",
         ],
         [
           "window",
-          "WINDOW"
+          "WINDOW",
         ],
         [
           "fence",
-          "FENCE"
+          "FENCE",
         ],
         [
           "perspective",
-          "PERSPECTIVE"
-        ]
-      ]
-    }
+          "PERSPECTIVE",
+        ],
+      ],
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_screen",
@@ -279,24 +278,24 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "clear",
-          "CS"
+          "CS",
         ],
         [
           "clean",
-          "CLEAN"
+          "CLEAN",
         ],
         [
           "fill",
-          "FILL"
-        ]
-      ]
-    }
+          "FILL",
+        ],
+      ],
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_set",
@@ -308,41 +307,41 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "x coordinate",
-          "SETX"
+          "SETX",
         ],
         [
           "y coordinate",
-          "SETY"
+          "SETY",
         ],
         [
           "z coordinate",
-          "SETZ"
+          "SETZ",
         ],
         [
           "heading",
-          "SETH"
+          "SETH",
         ],
         [
           "pitch",
-          "SETPITCH"
+          "SETPITCH",
         ],
         [
           "roll",
-          "SETROLL"
-        ]
-      ]
+          "SETROLL",
+        ],
+      ],
     },
     {
       "type": "input_value",
       "name": "VALUE",
-      "check": "Number"
-    }
+      "check": "Number",
+    },
   ],
   "previousStatement": null,
   "nextStatement": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
+  "helpUrl": "",
 },
 {
   "type": "logo_get",
@@ -354,34 +353,38 @@ Blockly.defineBlocksWithJsonArray([
       "options": [
         [
           "x coordinate",
-          "XCOR"
+          "XCOR",
         ],
         [
           "y coordinate",
-          "YCOR"
+          "YCOR",
         ],
         [
           "z coordinate",
-          "ZCOR"
+          "ZCOR",
         ],
         [
           "heading",
-          "HEADING"
+          "HEADING",
         ],
         [
           "pitch",
-          "PITCH"
+          "PITCH",
         ],
         [
           "roll",
-          "ROLL"
-        ]
-      ]
-    }
+          "ROLL",
+        ],
+      ],
+    },
   ],
   "output": null,
   "colour": 230,
   "tooltip": "",
-  "helpUrl": ""
-}
+  "helpUrl": "",
+},
 ]);
+
+exports.blocks = blocks;
+
+defineBlocks(blocks);
