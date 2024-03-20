@@ -2,52 +2,51 @@
  * @fileoverview Generating Logo for colour blocks.
  * @author Vilim Lendvaj
  */
-'use strict';
 
-goog.module('Blockly.Logo.colour');
+// Former goog.module ID: Blockly.Logo.colour
 
-const {logoGenerator: Logo} = goog.require('Blockly.Logo');
+import {Order} from './logo_generator.js';
 
 
-Logo['colour_picker'] = function(block) {
+export function colour_picker(block, generator) {
   // Colour picker.
   const c = block.getFieldValue('COLOUR');
   const r = parseInt(c.substring(1, 3), 16);
   const g = parseInt(c.substring(3, 5), 16);
   const b = parseInt(c.substring(5, 7), 16);
   const code = '[' + r + ' ' + g + ' ' + b + ']';
-  return [code, Logo.ORDER_ATOMIC];
+  return [code, Order.ATOMIC];
 };
 
-Logo['colour_random'] = function(block) {
+export function colour_random(block, generator) {
   // Generate a random colour.
   const code = "(list random 256 random 256 random 256)";
-  return [code, Logo.ORDER_ATOMIC];
+  return [code, Order.ATOMIC];
 };
 
-Logo['colour_rgb'] = function(block) {
+export function colour_rgb(block, generator) {
   // Compose a colour from RGB components expressed as percentages.
-  const red = Logo.valueToCode(block, 'RED',
-      Logo.ORDER_MULTIPLICATION) || 0;
-  const green = Logo.valueToCode(block, 'GREEN',
-      Logo.ORDER_MULTIPLICATION) || 0;
-  const blue = Logo.valueToCode(block, 'BLUE',
-      Logo.ORDER_MULTIPLICATION) || 0;
+  const red = generator.valueToCode(block, 'RED',
+      Order.MULTIPLICATION) || 0;
+  const green = generator.valueToCode(block, 'GREEN',
+      Order.MULTIPLICATION) || 0;
+  const blue = generator.valueToCode(block, 'BLUE',
+      Order.MULTIPLICATION) || 0;
   const code = '(list 2.55 * ' + red + ' 2.55 * ' + green + ' 2.55 * ' + blue + ')';
-  return [code, Logo.ORDER_ATOMIC];
+  return [code, Order.ATOMIC];
 };
 /*
-Logo['colour_blend'] = function(block) {
+export function colour_blend(block, generator) {
   // Blend two colours together.
-  var c1 = Logo.valueToCode(block, 'COLOUR1',
-      Logo.ORDER_COMMA) || '\'#000000\'';
-  var c2 = Logo.valueToCode(block, 'COLOUR2',
-      Logo.ORDER_COMMA) || '\'#000000\'';
-  var ratio = Logo.valueToCode(block, 'RATIO',
-      Logo.ORDER_COMMA) || 0.5;
-  var functionName = Logo.provideFunction_(
+  var c1 = generator.valueToCode(block, 'COLOUR1',
+      Order.COMMA) || '\'#000000\'';
+  var c2 = generator.valueToCode(block, 'COLOUR2',
+      Order.COMMA) || '\'#000000\'';
+  var ratio = generator.valueToCode(block, 'RATIO',
+      Order.COMMA) || 0.5;
+  var functionName = generator.provideFunction_(
       'colourBlend',
-      ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ +
+      ['function ' + generator.FUNCTION_NAME_PLACEHOLDER_ +
           '(c1, c2, ratio) {',
        '  ratio = Math.max(Math.min(Number(ratio), 1), 0);',
        '  var r1 = parseInt(c1.substring(1, 3), 16);',
@@ -65,5 +64,5 @@ Logo['colour_blend'] = function(block) {
        '  return \'#\' + r + g + b;',
        '}']);
   var code = functionName + '(' + c1 + ', ' + c2 + ', ' + ratio + ')';
-  return [code, Logo.ORDER_FUNCTION_CALL];
+  return [code, Order.FUNCTION_CALL];
 };*/

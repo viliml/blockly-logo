@@ -2,60 +2,59 @@
  * @fileoverview Generating Logo for math blocks.
  * @author Vilim Lendvaj
  */
-'use strict';
 
-goog.module('Blockly.Logo.math');
+// Former goog.module ID: Blockly.Logo.math
 
-const {logoGenerator: Logo} = goog.require('Blockly.Logo');
+import {Order} from './logo_generator.js';
 
 
-Logo['math_number'] = function(block) {
+export function math_number(block, generator) {
   // Numeric value.
   const code = Number(block.getFieldValue('NUM'));
-  const order = code >= 0 ? Logo.ORDER_ATOMIC :
-      Logo.ORDER_UNARY_NEGATION;
+  const order = code >= 0 ? Order.ATOMIC :
+      Order.UNARY_NEGATION;
   return [code, order];
 };
 
-Logo['math_arithmetic'] = function(block) {
+export function math_arithmetic(block, generator) {
   // Basic arithmetic operators, and power.
   const OPERATORS = {
-    'ADD': [' + ', Logo.ORDER_ADDITION],
-    'MINUS': [' - ', Logo.ORDER_SUBTRACTION],
-    'MULTIPLY': [' * ', Logo.ORDER_MULTIPLICATION],
-    'DIVIDE': [' / ', Logo.ORDER_DIVISION],
-    'POWER': [null, Logo.ORDER_NONE]  // Handle power separately.
+    'ADD': [' + ', Order.ADDITION],
+    'MINUS': [' - ', Order.SUBTRACTION],
+    'MULTIPLY': [' * ', Order.MULTIPLICATION],
+    'DIVIDE': [' / ', Order.DIVISION],
+    'POWER': [null, Order.NONE]  // Handle power separately.
   };
   const tuple = OPERATORS[block.getFieldValue('OP')];
   const operator = tuple[0];
   const order = tuple[1];
-  const argument0 = Logo.valueToCode(block, 'A', order) || '0';
-  const argument1 = Logo.valueToCode(block, 'B', order) || '0';
+  const argument0 = generator.valueToCode(block, 'A', order) || '0';
+  const argument1 = generator.valueToCode(block, 'B', order) || '0';
   let code;
   // Power in Logo requires a special case since it has no operator.
   if (!operator) {
     code = 'power ' + argument0 + ' ' + argument1;
-    return [code, Logo.ORDER_PROCEDURE];
+    return [code, Order.PROCEDURE];
   }
   code = argument0 + operator + argument1;
   return [code, order];
 };
 
-Logo['math_single'] = function(block) {
+export function math_single(block, generator) {
   // Math operators with single operand.
   const operator = block.getFieldValue('OP');
   let code;
   let arg;
   if (operator === 'NEG') {
     // Negation is a special case given its different operator precedence.
-    arg = Logo.valueToCode(block, 'NUM',
-        Logo.ORDER_UNARY_NEGATION) || '0';
+    arg = generator.valueToCode(block, 'NUM',
+        Order.UNARY_NEGATION) || '0';
     if (arg[0] === '-') {
       // --3 is not legal in JS.
       arg = ' ' + arg;
     }
     code = '-' + arg;
-    return [code, Logo.ORDER_UNARY_NEGATION];
+    return [code, Order.UNARY_NEGATION];
   }
   if (operator === 'ROUNDUP') {
     arg = Blockly.JavaScript.valueToCode(block, 'NUM',
@@ -115,23 +114,23 @@ Logo['math_single'] = function(block) {
     default:
       throw Error('Unknown math operator: ' + operator);
   }
-  return [code, Logo.ORDER_PROCEDURE];
+  return [code, Order.PROCEDURE];
 };
 
-Logo['math_constant'] = function(block) {
+export function math_constant(block, generator) {
   // Constants: PI, E, the Golden Ratio, sqrt(2), 1/sqrt(2), INFINITY.
   const CONSTANTS = {
-    'PI': ['pi', Logo.ORDER_ATOMIC],
-    'E': ['exp 1', Logo.ORDER_PROCEDURE],
+    'PI': ['pi', Order.ATOMIC],
+    'E': ['exp 1', Order.PROCEDURE],
     'GOLDEN_RATIO':
-        ['(1 + sqrt 5) / 2', Logo.ORDER_DIVISION],
-    'SQRT2': ['sqrt 2', Logo.ORDER_PROCEDURE],
-    'SQRT1_2': ['sqrt 1/2', Logo.ORDER_PROCEDURE]
+        ['(1 + sqrt 5) / 2', Order.DIVISION],
+    'SQRT2': ['sqrt 2', Order.PROCEDURE],
+    'SQRT1_2': ['sqrt 1/2', Order.PROCEDURE]
   };
   return CONSTANTS[block.getFieldValue('CONSTANT')];
 };
 
-Logo['math_number_property'] = function(block) {
+export function math_number_property(block, generator) {
   // Check if a number is even, odd, prime, whole, positive, or negative
   let number_to_check;
 // or if it is divisible by certain number. Returns true or false.
@@ -139,12 +138,12 @@ Logo['math_number_property'] = function(block) {
   let code;
   if (dropdown_property === 'PRIME') {
     throw Error('Primality testing isn\'t supported yet');
-    number_to_check = Logo.valueToCode(block, 'NUMBER_TO_CHECK',
-        Logo.ORDER_NONE) || '0';
+    number_to_check = generator.valueToCode(block, 'NUMBER_TO_CHECK',
+        Order.NONE) || '0';
     // Prime is a special case as it is not a one-liner test.
-    const functionName = Logo.provideFunction_(
+    const functionName = generator.provideFunction_(
         'mathIsPrime',
-        ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ + '(n) {',
+        ['function ' + generator.FUNCTION_NAME_PLACEHOLDER_ + '(n) {',
           '  // https://en.wikipedia.org/wiki/Primality_test#Naive_methods',
           '  if (n == 2 || n == 3) {',
           '    return true;',
@@ -164,13 +163,13 @@ Logo['math_number_property'] = function(block) {
           '  return true;',
           '}']);
     code = functionName + '(' + number_to_check + ')';
-    return [code, Logo.ORDER_PROCEDURE];
+    return [code, Order.PROCEDURE];
   }
   const numberOrder = (dropdown_property === 'POSITIVE' || dropdown_property === 'NEGATIVE') ?
-      Logo.ORDER_COMPARISON : Logo.ORDER_NONE;
+      Order.COMPARISON : Order.NONE;
   const order = (dropdown_property === 'POSITIVE' || dropdown_property === 'NEGATIVE') ?
-      Logo.ORDER_COMPARISON : Logo.ORDER_PROCEDURE;
-  number_to_check = Logo.valueToCode(block, 'NUMBER_TO_CHECK',
+      Order.COMPARISON : Order.PROCEDURE;
+  number_to_check = generator.valueToCode(block, 'NUMBER_TO_CHECK',
       numberOrder) || '0';
   switch (dropdown_property) {
     case 'EVEN':
@@ -189,67 +188,68 @@ Logo['math_number_property'] = function(block) {
       code = number_to_check + ' < 0';
       break;
     case 'DIVISIBLE_BY':
-      const divisor = Logo.valueToCode(block, 'DIVISOR',
-          Logo.ORDER_NONE) || '0';
+      const divisor = generator.valueToCode(block, 'DIVISOR',
+          Order.NONE) || '0';
       code = number_to_check + ' % ' + divisor + ' == 0';
       break;
   }
   return [code, order];
 };
 
-Logo['math_change'] = function(block) {
+export function math_change(block, generator) {
   // Add to a variable in place.
-  const argument0 = Logo.valueToCode(block, 'DELTA',
-      Logo.ORDER_ADDITION) || '0';
-  const varName = Logo.variableDB_.getName(
-      block.getFieldValue('VAR'), Blockly.VARIABLE_CATEGORY_NAME);
+  const argument0 = generator.valueToCode(block, 'DELTA',
+      Order.ADDITION) || '0';
+  const varName = generator.getVariableName(block.getFieldValue('VAR'));
   return 'make "' + varName + ' (ifelse numberp :' + varName + ' :' + varName +
       ' 0) + ' + argument0 + '\n';
 };
 
+
 // Rounding functions have a single operand.
-Logo['math_round'] = Logo['math_single'];
+export const math_round = math_single;
 // Trigonometry functions have a single operand.
-Logo['math_trig'] = Logo['math_single'];
+export const math_trig = math_single;
+
 /*
-Logo['math_on_list'] = function(block) {
+export function math_on_list(block, generator) {
   // Math functions for lists.
   var func = block.getFieldValue('OP');
   var list, code;
   switch (func) {
     case 'SUM':
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_MEMBER) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.MEMBER) || '[]';
       code = list + '.reduce(function(x, y) {return x + y;})';
       break;
     case 'MIN':
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_COMMA) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.COMMA) || '[]';
       code = 'Math.min.apply(null, ' + list + ')';
       break;
     case 'MAX':
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_COMMA) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.COMMA) || '[]';
       code = 'Math.max.apply(null, ' + list + ')';
       break;
     case 'AVERAGE':
       // mathMean([null,null,1,3]) == 2.0.
-      var functionName = Logo.provideFunction_(
+      var functionName = generator.provideFunction_(
           'mathMean',
-          ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ +
+          ['function ' + generator.FUNCTION_NAME_PLACEHOLDER_ +
               '(myList) {',
             '  return myList.reduce(function(x, y) {return x + y;}) / ' +
                   'myList.length;',
             '}']);
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_NONE) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.NONE) || '[]';
       code = functionName + '(' + list + ')';
       break;
     case 'MEDIAN':
       // mathMedian([null,null,1,3]) == 2.0.
-      var functionName = Logo.provideFunction_(
+      var functionName = generator.provideFunction_(
           'mathMedian',
-          ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ +
+          ['function ' + generator.FUNCTION_NAME_PLACEHOLDER_ +
               '(myList) {',
             '  var localList = myList.filter(function (x) ' +
               '{return typeof x == \'number\';});',
@@ -262,17 +262,17 @@ Logo['math_on_list'] = function(block) {
             '    return localList[(localList.length - 1) / 2];',
             '  }',
             '}']);
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_NONE) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.NONE) || '[]';
       code = functionName + '(' + list + ')';
       break;
     case 'MODE':
       // As a list of numbers can contain more than one mode,
       // the returned result is provided as an array.
       // Mode of [3, 'x', 'x', 1, 1, 2, '3'] -> ['x', 1].
-      var functionName = Logo.provideFunction_(
+      var functionName = generator.provideFunction_(
           'mathModes',
-          ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ +
+          ['function ' + generator.FUNCTION_NAME_PLACEHOLDER_ +
               '(values) {',
             '  var modes = [];',
             '  var counts = [];',
@@ -301,14 +301,14 @@ Logo['math_on_list'] = function(block) {
             '  }',
             '  return modes;',
             '}']);
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_NONE) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.NONE) || '[]';
       code = functionName + '(' + list + ')';
       break;
     case 'STD_DEV':
-      var functionName = Logo.provideFunction_(
+      var functionName = generator.provideFunction_(
           'mathStandardDeviation',
-          ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ +
+          ['function ' + generator.FUNCTION_NAME_PLACEHOLDER_ +
               '(numbers) {',
             '  var n = numbers.length;',
             '  if (!n) return null;',
@@ -320,72 +320,72 @@ Logo['math_on_list'] = function(block) {
             '  variance = variance / n;',
             '  return Math.sqrt(variance);',
             '}']);
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_NONE) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.NONE) || '[]';
       code = functionName + '(' + list + ')';
       break;
     case 'RANDOM':
-      var functionName = Logo.provideFunction_(
+      var functionName = generator.provideFunction_(
           'mathRandomList',
-          ['function ' + Logo.FUNCTION_NAME_PLACEHOLDER_ +
+          ['function ' + generator.FUNCTION_NAME_PLACEHOLDER_ +
               '(list) {',
             '  var x = Math.floor(Math.random() * list.length);',
             '  return list[x];',
             '}']);
-      list = Logo.valueToCode(block, 'LIST',
-          Logo.ORDER_NONE) || '[]';
+      list = generator.valueToCode(block, 'LIST',
+          Order.NONE) || '[]';
       code = functionName + '(' + list + ')';
       break;
     default:
       throw Error('Unknown operator: ' + func);
   }
-  return [code, Logo.ORDER_FUNCTION_CALL];
+  return [code, Order.FUNCTION_CALL];
 };
 */
-Logo['math_modulo'] = function(block) {
+export function math_modulo(block, generator) {
   // Remainder computation.
-  const argument0 = Logo.valueToCode(block, 'DIVIDEND',
-      Logo.ORDER_NONE) || '0';
-  const argument1 = Logo.valueToCode(block, 'DIVISOR',
-      Logo.ORDER_NONE) || '0';
+  const argument0 = generator.valueToCode(block, 'DIVIDEND',
+      Order.NONE) || '0';
+  const argument1 = generator.valueToCode(block, 'DIVISOR',
+      Order.NONE) || '0';
   const code = 'modulo ' + argument0 + ' ' + argument1;
-  return [code, Logo.ORDER_PROCEDURE];
+  return [code, Order.PROCEDURE];
 };
 /*
-Logo['math_constrain'] = function(block) {
+export function math_constrain(block, generator) {
   // Constrain a number between two limits.
-  var argument0 = Logo.valueToCode(block, 'VALUE',
-      Logo.ORDER_COMMA) || '0';
-  var argument1 = Logo.valueToCode(block, 'LOW',
-      Logo.ORDER_COMMA) || '0';
-  var argument2 = Logo.valueToCode(block, 'HIGH',
-      Logo.ORDER_COMMA) || 'Infinity';
+  var argument0 = generator.valueToCode(block, 'VALUE',
+      Order.COMMA) || '0';
+  var argument1 = generator.valueToCode(block, 'LOW',
+      Order.COMMA) || '0';
+  var argument2 = generator.valueToCode(block, 'HIGH',
+      Order.COMMA) || 'Infinity';
   var code = 'Math.min(Math.max(' + argument0 + ', ' + argument1 + '), ' +
       argument2 + ')';
-  return [code, Logo.ORDER_FUNCTION_CALL];
+  return [code, Order.FUNCTION_CALL];
 };
 */
-Logo['math_random_int'] = function(block) {
+export function math_random_int(block, generator) {
   // Random integer between [X] and [Y].
-  const argument0 = Logo.valueToCode(block, 'FROM',
-      Logo.ORDER_SUBTRACTION) || '0';
-  const argument1 = Logo.valueToCode(block, 'TO',
-      Logo.ORDER_SUBTRACTION) || '0';
+  const argument0 = generator.valueToCode(block, 'FROM',
+      Order.SUBTRACTION) || '0';
+  const argument1 = generator.valueToCode(block, 'TO',
+      Order.SUBTRACTION) || '0';
   const code = argument0 + ' + random ' + argument1 + ' - ' + argument0 + " + 1";
-  return [code, Logo.ORDER_PROCEDURE];
+  return [code, Order.PROCEDURE];
 };
 /*
-Logo['math_random_float'] = function(block) {
+export function math_random_float(block, generator) {
   // Random fraction between 0 and 1.
-  return ['Math.random()', Logo.ORDER_FUNCTION_CALL];
+  return ['Math.random()', Order.FUNCTION_CALL];
 };
 */
-Logo['math_atan2'] = function(block) {
+export function math_atan2(block, generator) {
   // Arctangent of point (X, Y) in degrees from -180 to 180.
-  const argument0 = Logo.valueToCode(block, 'X',
-      Logo.ORDER_NONE) || '0';
-  const argument1 = Logo.valueToCode(block, 'Y',
-      Logo.ORDER_NONE) || '0';
+  const argument0 = generator.valueToCode(block, 'X',
+      Order.NONE) || '0';
+  const argument1 = generator.valueToCode(block, 'Y',
+      Order.NONE) || '0';
   return ['(arctan ' + argument0 + ' ' + argument1 + ')',
-      Logo.ORDER_ATOMIC];
+      Order.ATOMIC];
 };

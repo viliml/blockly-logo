@@ -2,25 +2,22 @@
  * @fileoverview Generating Logo for variable blocks.
  * @author Vilim Lendvaj
  */
-'use strict';
 
-goog.module('Blockly.Logo.variables');
+// Former goog.module ID: Blockly.Logo.variables
 
-const {logoGenerator: Logo} = goog.require('Blockly.Logo');
+import {Order} from './logo_generator.js';
 
 
-Logo['variables_get'] = function(block) {
+export function variables_get(block, generator) {
   // Variable getter.
-  const code = ':' + Logo.variableDB_.getName(block.getFieldValue('VAR'),
-      Blockly.VARIABLE_CATEGORY_NAME);
-  return [code, Logo.ORDER_ATOMIC];
+  const code = ':' + generator.getVariableName(block.getFieldValue('VAR'));
+  return [code, Order.ATOMIC];
 };
 
-Logo['variables_set'] = function(block) {
+export function variables_set(block, generator) {
   // Variable setter.
-  const argument0 = Logo.valueToCode(block, 'VALUE',
-      Logo.ORDER_ATOMIC) || '0'; //TODO add proper order
-  const varName = Logo.variableDB_.getName(
-      block.getFieldValue('VAR'), Blockly.VARIABLE_CATEGORY_NAME);
-  return 'make ' + Logo.quote_(varName) + ' ' + argument0 + '\n';
+  const argument0 = generator.valueToCode(block, 'VALUE',
+      Order.ATOMIC) || '0'; //TODO add proper order
+  const varName = generator.getVariableName(block.getFieldValue('VAR'));
+  return 'make ' + generator.quote_(varName) + ' ' + argument0 + '\n';
 };

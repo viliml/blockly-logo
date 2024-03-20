@@ -267,8 +267,8 @@ function packageDart() {
 };
 
 /**
- * This task wraps php_compressed.js into a UMD module.
- * @example import 'blockly/php';
+ * This task wraps logo_compressed.js into a UMD module.
+ * @example import 'blockly/logo';
  */
 function packageLogo() {
     return packageGenerator('logo_compressed.js', 'logo.js', 'Logo');

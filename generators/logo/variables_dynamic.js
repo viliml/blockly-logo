@@ -2,15 +2,12 @@
  * @fileoverview Generating Logo for dynamic variable blocks.
  * @author Vilim Lendvaj
  */
-'use strict';
 
-goog.module('Blockly.Logo.variablesDynamic');
-
-const {logoGenerator: Logo} = goog.require('Blockly.Logo');
+// Former goog.module ID: Blockly.Logo.variablesDynamic
 
 
 // Logo is dynamically typed.
-Logo['variables_get_dynamic'] =
-    Logo['variables_get'];
-Logo['variables_set_dynamic'] =
-    Logo['variables_set'];
+export {
+  variables_get as variables_get_dynamic,
+  variables_set as variables_set_dynamic,
+} from './variables.js';

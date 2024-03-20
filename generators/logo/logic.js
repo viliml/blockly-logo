@@ -2,41 +2,40 @@
  * @fileoverview Generating Logo for logic blocks.
  * @author Vilim Lendvaj
  */
-'use strict';
 
-goog.module('Blockly.Logo.logic');
+// Former goog.module ID: Blockly.Logo.logic
 
-const {logoGenerator: Logo} = goog.require('Blockly.Logo');
+import {Order} from './logo_generator.js';
 
 
-Logo['controls_ifelse'] = function(block) {
+export function controls_ifelse(block, generator) {
   // If/else condition.
   let code = '', conditionCode, ifCode, elseCode;
-  if (Logo.STATEMENT_PREFIX) {
+  if (generator.STATEMENT_PREFIX) {
     // Automatic prefix insertion is switched off for this block.  Add manually.
-    code += Logo.injectId(Logo.STATEMENT_PREFIX,
+    code += generator.injectId(generator.STATEMENT_PREFIX,
         block);
   }
-  conditionCode = Logo.valueToCode(block, 'IF0',
-      Logo.ORDER_NONE) || '"false';
-  ifCode = Logo.statementToCode(block, 'DO0');
-  if (Logo.STATEMENT_SUFFIX) {
-    ifCode = Logo.prefixLines(
-        Logo.injectId(Logo.STATEMENT_SUFFIX,
-        block), Logo.INDENT) + ifCode;
+  conditionCode = generator.valueToCode(block, 'IF0',
+      Order.NONE) || '"false';
+  ifCode = generator.statementToCode(block, 'DO0');
+  if (generator.STATEMENT_SUFFIX) {
+    ifCode = generator.prefixLines(
+        generator.injectId(generator.STATEMENT_SUFFIX,
+        block), generator.INDENT) + ifCode;
   }
 
-  elseCode = Logo.statementToCode(block, 'ELSE');
-  if (Logo.STATEMENT_SUFFIX) {
-    elseCode = Logo.prefixLines(
-      Logo.injectId(Logo.STATEMENT_SUFFIX,
-        block), Logo.INDENT) + elseCode;
+  elseCode = generator.statementToCode(block, 'ELSE');
+  if (generator.STATEMENT_SUFFIX) {
+    elseCode = generator.prefixLines(
+      generator.injectId(generator.STATEMENT_SUFFIX,
+        block), generator.INDENT) + elseCode;
   }
   code += 'ifelse ' + conditionCode + ' [\n' + ifCode + '] [\n' + elseCode + ']\n';
   return code;
 }
 
-Logo['logic_compare'] = function(block) {
+export function logic_compare(block, generator) {
   // Comparison operator.
   const OPERATORS = {
     'EQ': '==',
@@ -47,17 +46,17 @@ Logo['logic_compare'] = function(block) {
     'GTE': '>='
   };
   const operator = OPERATORS[block.getFieldValue('OP')];
-  const argument0 = Logo.valueToCode(block, 'A', Logo.ORDER_COMPARISON) || '0';
-  const argument1 = Logo.valueToCode(block, 'B', Logo.ORDER_COMPARISON) || '0';
+  const argument0 = generator.valueToCode(block, 'A', Order.COMPARISON) || '0';
+  const argument1 = generator.valueToCode(block, 'B', Order.COMPARISON) || '0';
   const code = argument0 + ' ' + operator + ' ' + argument1;
-  return [code, Logo.ORDER_COMPARISON];
+  return [code, Order.COMPARISON];
 };
 
-Logo['logic_operation'] = function(block) {
+export function logic_operation(block, generator) {
   // Operations 'and', 'or'.
   const operator = (block.getFieldValue('OP') === 'AND') ? 'and' : 'or';
-  let argument0 = Logo.valueToCode(block, 'A', Logo.ORDER_NONE);
-  let argument1 = Logo.valueToCode(block, 'B', Logo.ORDER_NONE);
+  let argument0 = generator.valueToCode(block, 'A', Order.NONE);
+  let argument1 = generator.valueToCode(block, 'B', Order.NONE);
   // Single missing arguments have no effect on the return value.
   const defaultArgument = (operator === 'and') ? 'true' : 'false';
   if (!argument0) {
@@ -67,36 +66,36 @@ Logo['logic_operation'] = function(block) {
     argument1 = defaultArgument;
   }
   const code = operator + ' ' + argument0 + ' ' + argument1;
-  return [code, Logo.ORDER_PROCEDURE];
+  return [code, Order.PROCEDURE];
 };
 
-Logo['logic_negate'] = function(block) {
+export function logic_negate(block, generator) {
   // Negation.
-  const argument0 = Logo.valueToCode(block, 'BOOL', Logo.ORDER_NONE) ||
+  const argument0 = generator.valueToCode(block, 'BOOL', Order.NONE) ||
       'true';
   const code = '!' + argument0;
-  return [code, Logo.ORDER_PROCEDURE];
+  return [code, Order.PROCEDURE];
 };
 
-Logo['logic_boolean'] = function(block) {
+export function logic_boolean(block, generator) {
   // Boolean values true and false.
   const code = (block.getFieldValue('BOOL') === 'TRUE') ? '"true' : '"false';
-  return [code, Logo.ORDER_ATOMIC];
+  return [code, Order.ATOMIC];
 };
 
-Logo['logic_null'] = function(block) {
+export function logic_null(block, generator) {
   // Null data type.
-  return ['[]', Logo.ORDER_ATOMIC];
+  return ['[]', Order.ATOMIC];
 };
 
-Logo['logic_ternary'] = function(block) {
+export function logic_ternary(block, generator) {
   // Ternary operator.
-  const value_if = Logo.valueToCode(block, 'IF',
-      Logo.ORDER_NONE) || '"false';
-  const value_then = Logo.valueToCode(block, 'THEN',
-      Logo.ORDER_NONE) || '[]';
-  const value_else = Logo.valueToCode(block, 'ELSE',
-      Logo.ORDER_NONE) || '[]';
+  const value_if = generator.valueToCode(block, 'IF',
+      Order.NONE) || '"false';
+  const value_then = generator.valueToCode(block, 'THEN',
+      Order.NONE) || '[]';
+  const value_else = generator.valueToCode(block, 'ELSE',
+      Order.NONE) || '[]';
   const code = 'ifelse ' + value_if + ' [' + value_then + '] [' + value_else + ']';
-  return [code, Logo.ORDER_PROCEDURE];
+  return [code, Order.PROCEDURE];
 };
