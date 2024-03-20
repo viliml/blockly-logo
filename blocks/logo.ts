@@ -7,17 +7,17 @@
  * exception is end-of-line comments, which the scraper will remove.
  * @author Vilim Lendvaj
  */
-'use strict';
 
-goog.module('Blockly.libraryBlocks.logo');
+import * as goog from '../closure/goog/goog.js';
+goog.declareModuleId('Blockly.libraryBlocks.logo');
 
-const {createBlockDefinitionsFromJsonArray, defineBlocks} = goog.require('Blockly.common');
+import {createBlockDefinitionsFromJsonArray, defineBlocks} from '../core/common.js';
 
 /**
  * A dictionary of the block definitions provided by this module.
  * @type {!Object<string, !BlockDefinition>}
  */
-const blocks = createBlockDefinitionsFromJsonArray([
+export const blocks = createBlockDefinitionsFromJsonArray([
 {
   "type": "logo_move",
   "message0": "move %1 by %2",
@@ -384,7 +384,5 @@ const blocks = createBlockDefinitionsFromJsonArray([
   "helpUrl": "",
 },
 ]);
-
-exports.blocks = blocks;
 
 defineBlocks(blocks);
