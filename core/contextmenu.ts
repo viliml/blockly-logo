@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.ContextMenu');
+// Former goog.module ID: Blockly.ContextMenu
 
 import type {Block} from './block.js';
 import type {BlockSvg} from './block_svg.js';
@@ -13,7 +12,10 @@ import * as browserEvents from './browser_events.js';
 import * as clipboard from './clipboard.js';
 import {config} from './config.js';
 import * as dom from './utils/dom.js';
-import type {ContextMenuOption, LegacyContextMenuOption} from './contextmenu_registry.js';
+import type {
+  ContextMenuOption,
+  LegacyContextMenuOption,
+} from './contextmenu_registry.js';
 import * as eventUtils from './events/utils.js';
 import {Menu} from './menu.js';
 import {MenuItem} from './menuitem.js';
@@ -21,17 +23,17 @@ import {Msg} from './msg.js';
 import * as aria from './utils/aria.js';
 import {Coordinate} from './utils/coordinate.js';
 import {Rect} from './utils/rect.js';
+import * as serializationBlocks from './serialization/blocks.js';
 import * as svgMath from './utils/svg_math.js';
 import * as WidgetDiv from './widgetdiv.js';
 import {WorkspaceCommentSvg} from './workspace_comment_svg.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
 import * as Xml from './xml.js';
 
-
 /**
  * Which block is the context menu attached to?
  */
-let currentBlock: Block|null = null;
+let currentBlock: Block | null = null;
 
 const dummyOwner = {};
 
@@ -40,7 +42,7 @@ const dummyOwner = {};
  *
  * @returns The block the context menu is attached to.
  */
-export function getCurrentBlock(): Block|null {
+export function getCurrentBlock(): Block | null {
   return currentBlock;
 }
 
@@ -49,14 +51,14 @@ export function getCurrentBlock(): Block|null {
  *
  * @param block The block the context menu is attached to.
  */
-export function setCurrentBlock(block: Block|null) {
+export function setCurrentBlock(block: Block | null) {
   currentBlock = block;
 }
 
 /**
  * Menu object.
  */
-let menu_: Menu|null = null;
+let menu_: Menu | null = null;
 
 /**
  * Construct the menu based on the list of options and show the menu.
@@ -66,8 +68,10 @@ let menu_: Menu|null = null;
  * @param rtl True if RTL, false if LTR.
  */
 export function show(
-    e: Event, options: (ContextMenuOption|LegacyContextMenuOption)[],
-    rtl: boolean) {
+  e: Event,
+  options: (ContextMenuOption | LegacyContextMenuOption)[],
+  rtl: boolean,
+) {
   WidgetDiv.show(dummyOwner, rtl, dispose);
   if (!options.length) {
     hide();
@@ -79,10 +83,10 @@ export function show(
   position_(menu, e, rtl);
   // 1ms delay is required for focusing on context menus because some other
   // mouse event is still waiting in the queue and clears focus.
-  setTimeout(function() {
+  setTimeout(function () {
     menu.focus();
   }, 1);
-  currentBlock = null;  // May be set by Blockly.Block.
+  currentBlock = null; // May be set by Blockly.Block.
 }
 
 /**
@@ -93,8 +97,9 @@ export function show(
  * @returns The menu that will be shown on right click.
  */
 function populate_(
-    options: (ContextMenuOption|LegacyContextMenuOption)[],
-    rtl: boolean): Menu {
+  options: (ContextMenuOption | LegacyContextMenuOption)[],
+  rtl: boolean,
+): Menu {
   /* Here's what one option object looks like:
       {text: 'Make It So',
        enabled: true,
@@ -110,7 +115,7 @@ function populate_(
     menu.addChild(menuItem);
     menuItem.setEnabled(option.enabled);
     if (option.enabled) {
-      const actionHandler = function() {
+      const actionHandler = function () {
         hide();
         requestAnimationFrame(() => {
           setTimeout(() => {
@@ -143,10 +148,11 @@ function position_(menu: Menu, e: Event, rtl: boolean) {
   // This one is just a point, but we'll pretend that it's a rect so we can use
   // some helper functions.
   const anchorBBox = new Rect(
-      mouseEvent.clientY + viewportBBox.top,
-      mouseEvent.clientY + viewportBBox.top,
-      mouseEvent.clientX + viewportBBox.left,
-      mouseEvent.clientX + viewportBBox.left);
+    mouseEvent.clientY + viewportBBox.top,
+    mouseEvent.clientY + viewportBBox.top,
+    mouseEvent.clientX + viewportBBox.left,
+    mouseEvent.clientX + viewportBBox.left,
+  );
 
   createWidget_(menu);
   const menuSize = menu.getSize();
@@ -179,7 +185,11 @@ function createWidget_(menu: Menu) {
   dom.addClass(menuDom, 'blocklyContextMenu');
   // Prevent system context menu when right-clicking a Blockly context menu.
   browserEvents.conditionalBind(
-      (menuDom as EventTarget), 'contextmenu', null, haltPropagation);
+    menuDom as EventTarget,
+    'contextmenu',
+    null,
+    haltPropagation,
+  );
   // Focus only after the initial render to avoid issue #1329.
   menu.focus();
 }
@@ -214,18 +224,28 @@ export function dispose() {
 
 /**
  * Create a callback function that creates and configures a block,
- *   then places the new block next to the original.
+ *   then places the new block next to the original and returns it.
  *
  * @param block Original block.
- * @param xml XML representation of new block.
+ * @param state XML or JSON object representation of the new block.
  * @returns Function that creates a block.
  */
-export function callbackFactory(block: Block, xml: Element): Function {
+export function callbackFactory(
+  block: Block,
+  state: Element | serializationBlocks.State,
+): () => BlockSvg {
   return () => {
     eventUtils.disable();
-    let newBlock;
+    let newBlock: BlockSvg;
     try {
-      newBlock = Xml.domToBlock(xml, block.workspace!) as BlockSvg;
+      if (state instanceof Element) {
+        newBlock = Xml.domToBlockInternal(state, block.workspace!) as BlockSvg;
+      } else {
+        newBlock = serializationBlocks.appendInternal(
+          state,
+          block.workspace,
+        ) as BlockSvg;
+      }
       // Move the new block next to the old block.
       const xy = block.getRelativeToSurfaceXY();
       if (block.RTL) {
@@ -242,6 +262,7 @@ export function callbackFactory(block: Block, xml: Element): Function {
       eventUtils.fire(new (eventUtils.get(eventUtils.BLOCK_CREATE))(newBlock));
     }
     newBlock.select();
+    return newBlock;
   };
 }
 
@@ -256,12 +277,13 @@ export function callbackFactory(block: Block, xml: Element): Function {
  *     containing text, enabled, and a callback.
  * @internal
  */
-export function commentDeleteOption(comment: WorkspaceCommentSvg):
-    LegacyContextMenuOption {
+export function commentDeleteOption(
+  comment: WorkspaceCommentSvg,
+): LegacyContextMenuOption {
   const deleteOption = {
     text: Msg['REMOVE_COMMENT'],
     enabled: true,
-    callback: function() {
+    callback: function () {
       eventUtils.setGroup(true);
       comment.dispose();
       eventUtils.setGroup(false);
@@ -279,13 +301,16 @@ export function commentDeleteOption(comment: WorkspaceCommentSvg):
  *     containing text, enabled, and a callback.
  * @internal
  */
-export function commentDuplicateOption(comment: WorkspaceCommentSvg):
-    LegacyContextMenuOption {
+export function commentDuplicateOption(
+  comment: WorkspaceCommentSvg,
+): LegacyContextMenuOption {
   const duplicateOption = {
     text: Msg['DUPLICATE_COMMENT'],
     enabled: true,
-    callback: function() {
-      clipboard.duplicate(comment);
+    callback: function () {
+      const data = comment.toCopyData();
+      if (!data) return;
+      clipboard.paste(data, comment.workspace);
     },
   };
   return duplicateOption;
@@ -298,20 +323,24 @@ export function commentDuplicateOption(comment: WorkspaceCommentSvg):
  *     originated.
  * @param e The right-click mouse event.
  * @returns A menu option, containing text, enabled, and a callback.
- * @suppress {strictModuleDepCheck,checkTypes} Suppress checks while workspace
  *     comments are not bundled in.
  * @internal
  */
 export function workspaceCommentOption(
-    ws: WorkspaceSvg, e: Event): ContextMenuOption {
+  ws: WorkspaceSvg,
+  e: Event,
+): ContextMenuOption {
   /**
    * Helper function to create and position a comment correctly based on the
    * location of the mouse event.
    */
   function addWsComment() {
     const comment = new WorkspaceCommentSvg(
-        ws, Msg['WORKSPACE_COMMENT_DEFAULT_TEXT'],
-        WorkspaceCommentSvg.DEFAULT_SIZE, WorkspaceCommentSvg.DEFAULT_SIZE);
+      ws,
+      Msg['WORKSPACE_COMMENT_DEFAULT_TEXT'],
+      WorkspaceCommentSvg.DEFAULT_SIZE,
+      WorkspaceCommentSvg.DEFAULT_SIZE,
+    );
 
     const injectionDiv = ws.getInjectionDiv();
     // Bounding rect coordinates are in client coordinates, meaning that they
@@ -322,8 +351,9 @@ export function workspaceCommentOption(
     // The client coordinates offset by the injection div's upper left corner.
     const mouseEvent = e as MouseEvent;
     const clientOffsetPixels = new Coordinate(
-        mouseEvent.clientX - boundingRect.left,
-        mouseEvent.clientY - boundingRect.top);
+      mouseEvent.clientX - boundingRect.left,
+      mouseEvent.clientY - boundingRect.top,
+    );
 
     // The offset in pixels between the main workspace's origin and the upper
     // left corner of the injection div.
@@ -331,8 +361,10 @@ export function workspaceCommentOption(
 
     // The position of the new comment in pixels relative to the origin of the
     // main workspace.
-    const finalOffset =
-        Coordinate.difference(clientOffsetPixels, mainOffsetPixels);
+    const finalOffset = Coordinate.difference(
+      clientOffsetPixels,
+      mainOffsetPixels,
+    );
     // The position of the new comment in main workspace coordinates.
     finalOffset.scale(1 / ws.scale);
 
@@ -350,7 +382,7 @@ export function workspaceCommentOption(
     enabled: true,
   } as ContextMenuOption;
   wsCommentOption.text = Msg['ADD_COMMENT'];
-  wsCommentOption.callback = function() {
+  wsCommentOption.callback = function () {
     addWsComment();
   };
   return wsCommentOption;

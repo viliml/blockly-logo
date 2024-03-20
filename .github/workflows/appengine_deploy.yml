@@ -15,7 +15,7 @@ jobs:
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE.
       # When running manually this checks out the master branch.
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Prepare demo files
         # Install all dependencies, then copy all the files needed for demos.
@@ -42,7 +42,7 @@ jobs:
           path: _deploy/
 
       - name: Deploy to App Engine
-        uses: google-github-actions/deploy-appengine@v1.2.2
+        uses: google-github-actions/deploy-appengine@v1.2.7
         # For parameters see:
         # https://github.com/google-github-actions/deploy-appengine#inputs
         with:

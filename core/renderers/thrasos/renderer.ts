@@ -4,15 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.thrasos.Renderer');
+// Former goog.module ID: Blockly.thrasos.Renderer
 
 import type {BlockSvg} from '../../block_svg.js';
 import * as blockRendering from '../common/block_rendering.js';
 import {Renderer as BaseRenderer} from '../common/renderer.js';
 
 import {RenderInfo} from './info.js';
-
 
 /**
  * The thrasos renderer. This is a more modern take on the legacy geras

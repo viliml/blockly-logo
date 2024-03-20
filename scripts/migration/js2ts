@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const path = require('path').posix;
+const path = require('path');
 
 const filenames = process.argv.slice(2);  // Trim off node and script name.
 
@@ -54,7 +54,6 @@ goog.addDependency = function(relPath, provides, _requires, opt_loadFlags) {
 
 // Load deps files relative to this script's location.
 require(path.resolve(__dirname, '../../build/deps.js'));
-require(path.resolve(__dirname, '../../build/deps.mocha.js'));
 
 //////////////////////////////////////////////////////////////////////
 // Process files mentioned on the command line.
@@ -63,6 +62,9 @@ require(path.resolve(__dirname, '../../build/deps.mocha.js'));
 /** RegExp matching goog.require statements. */
 const requireRE =
     /(?:const\s+(?:([$\w]+)|(\{[^}]*\}))\s+=\s+)?goog.require(Type)?\('([^']+)'\);/mg;
+
+/** RegExp matching key: value pairs in destructuring assignments. */
+const keyValueRE = /([$\w]+)\s*:\s*([$\w]+)\s*(?=,|})/g;
 
 for (const filename of filenames) {
   let contents = null;
@@ -102,11 +104,13 @@ for (const filename of filenames) {
               moduleId}') as no ES module path known.`);
           return orig;
         }
-        const relativePath =
+        let relativePath =
             path.relative(path.dirname(path.resolve(filename)), importPath);
+        if (relativePath[0] !== '.') relativePath = './' + relativePath;
         if (name) {
           return `import${type} * as ${name} from '${relativePath}';`;
         } else if (names) {
+          names = names.replace(keyValueRE, '$1 as $2');
           return `import${type} ${names} from '${relativePath}';`;
         } else {  // Side-effect only require.
           return `import${type} '${relativePath}';`;

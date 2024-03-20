@@ -4,15 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.Extensions');
+// Former goog.module ID: Blockly.Extensions
 
 import type {Block} from './block.js';
 import type {BlockSvg} from './block_svg.js';
 import {FieldDropdown} from './field_dropdown.js';
-import {Mutator} from './mutator.js';
+import {MutatorIcon} from './icons/mutator_icon.js';
 import * as parsing from './utils/parsing.js';
-
 
 /** The set of all registered extensions, keyed by extension name/id. */
 const allExtensions = Object.create(null);
@@ -54,7 +52,7 @@ export function registerMixin(name: string, mixinObj: AnyDuringMigration) {
   if (!mixinObj || typeof mixinObj !== 'object') {
     throw Error('Error: Mixin "' + name + '" must be a object');
   }
-  register(name, function(this: Block) {
+  register(name, function (this: Block) {
     this.mixin(mixinObj);
   });
 }
@@ -73,8 +71,11 @@ export function registerMixin(name: string, mixinObj: AnyDuringMigration) {
  * @throws {Error} if the mutation is invalid or can't be applied to the block.
  */
 export function registerMutator(
-    name: string, mixinObj: AnyDuringMigration,
-    opt_helperFn?: () => AnyDuringMigration, opt_blockList?: string[]) {
+  name: string,
+  mixinObj: AnyDuringMigration,
+  opt_helperFn?: () => AnyDuringMigration,
+  opt_blockList?: string[],
+) {
   const errorPrefix = 'Error when registering mutator "' + name + '": ';
 
   checkHasMutatorProperties(errorPrefix, mixinObj);
@@ -85,9 +86,9 @@ export function registerMutator(
   }
 
   // Sanity checks passed.
-  register(name, function(this: Block) {
+  register(name, function (this: Block) {
     if (hasMutatorDialog) {
-      this.setMutator(new Mutator(opt_blockList || [], this as BlockSvg));
+      this.setMutator(new MutatorIcon(opt_blockList || [], this as BlockSvg));
     }
     // Mixin the object.
     this.mixin(mixinObj);
@@ -108,7 +109,8 @@ export function unregister(name: string) {
     delete allExtensions[name];
   } else {
     console.warn(
-        'No extension mapping for name "' + name + '" found to unregister');
+      'No extension mapping for name "' + name + '" found to unregister',
+    );
   }
 }
 
@@ -151,11 +153,15 @@ export function apply(name: string, block: Block, isMutator: boolean) {
     const errorPrefix = 'Error after applying mutator "' + name + '": ';
     checkHasMutatorProperties(errorPrefix, block);
   } else {
-    if (!mutatorPropertiesMatch(
-            mutatorProperties as AnyDuringMigration[], block)) {
+    if (
+      !mutatorPropertiesMatch(mutatorProperties as AnyDuringMigration[], block)
+    ) {
       throw Error(
-          'Error when applying extension "' + name + '": ' +
-          'mutation properties changed when applying a non-mutator extension.');
+        'Error when applying extension "' +
+          name +
+          '": ' +
+          'mutation properties changed when applying a non-mutator extension.',
+      );
     }
   }
 }
@@ -173,9 +179,12 @@ function checkNoMutatorProperties(mutationName: string, block: Block) {
   const properties = getMutatorProperties(block);
   if (properties.length) {
     throw Error(
-        'Error: tried to apply mutation "' + mutationName +
+      'Error: tried to apply mutation "' +
+        mutationName +
         '" to a block that already has mutator functions.' +
-        '  Block id: ' + block.id);
+        '  Block id: ' +
+        block.id,
+    );
   }
 }
 
@@ -191,10 +200,14 @@ function checkNoMutatorProperties(mutationName: string, block: Block) {
  *     actually a function.
  */
 function checkXmlHooks(
-    object: AnyDuringMigration, errorPrefix: string): boolean {
+  object: AnyDuringMigration,
+  errorPrefix: string,
+): boolean {
   return checkHasFunctionPair(
-      object.mutationToDom, object.domToMutation,
-      errorPrefix + ' mutationToDom/domToMutation');
+    object.mutationToDom,
+    object.domToMutation,
+    errorPrefix + ' mutationToDom/domToMutation',
+  );
 }
 /**
  * Checks if the given object has both the 'saveExtraState' and 'loadExtraState'
@@ -208,10 +221,14 @@ function checkXmlHooks(
  *     actually a function.
  */
 function checkJsonHooks(
-    object: AnyDuringMigration, errorPrefix: string): boolean {
+  object: AnyDuringMigration,
+  errorPrefix: string,
+): boolean {
   return checkHasFunctionPair(
-      object.saveExtraState, object.loadExtraState,
-      errorPrefix + ' saveExtraState/loadExtraState');
+    object.saveExtraState,
+    object.loadExtraState,
+    errorPrefix + ' saveExtraState/loadExtraState',
+  );
 }
 
 /**
@@ -225,9 +242,14 @@ function checkJsonHooks(
  *     actually a function.
  */
 function checkMutatorDialog(
-    object: AnyDuringMigration, errorPrefix: string): boolean {
+  object: AnyDuringMigration,
+  errorPrefix: string,
+): boolean {
   return checkHasFunctionPair(
-      object.compose, object.decompose, errorPrefix + ' compose/decompose');
+    object.compose,
+    object.decompose,
+    errorPrefix + ' compose/decompose',
+  );
 }
 
 /**
@@ -243,8 +265,10 @@ function checkMutatorDialog(
  *     actually a function.
  */
 function checkHasFunctionPair(
-    func1: AnyDuringMigration, func2: AnyDuringMigration,
-    errorPrefix: string): boolean {
+  func1: AnyDuringMigration,
+  func2: AnyDuringMigration,
+  errorPrefix: string,
+): boolean {
   if (func1 && func2) {
     if (typeof func1 !== 'function' || typeof func2 !== 'function') {
       throw Error(errorPrefix + ' must be a function');
@@ -263,13 +287,16 @@ function checkHasFunctionPair(
  * @param object The object to inspect.
  */
 function checkHasMutatorProperties(
-    errorPrefix: string, object: AnyDuringMigration) {
+  errorPrefix: string,
+  object: AnyDuringMigration,
+) {
   const hasXmlHooks = checkXmlHooks(object, errorPrefix);
   const hasJsonHooks = checkJsonHooks(object, errorPrefix);
   if (!hasXmlHooks && !hasJsonHooks) {
     throw Error(
-        errorPrefix +
-        'Mutations must contain either XML hooks, or JSON hooks, or both');
+      errorPrefix +
+        'Mutations must contain either XML hooks, or JSON hooks, or both',
+    );
   }
   // A block with a mutator isn't required to have a mutation dialog, but
   // it should still have both or neither of compose and decompose.
@@ -318,7 +345,9 @@ function getMutatorProperties(block: Block): AnyDuringMigration[] {
  * @returns True if the property lists match.
  */
 function mutatorPropertiesMatch(
-    oldProperties: AnyDuringMigration[], block: Block): boolean {
+  oldProperties: AnyDuringMigration[],
+  block: Block,
+): boolean {
   const newProperties = getMutatorProperties(block);
   if (newProperties.length !== oldProperties.length) {
     return false;
@@ -343,10 +372,10 @@ export function runAfterPageLoad(fn: () => void) {
     throw Error('runAfterPageLoad() requires browser document.');
   }
   if (document.readyState === 'complete') {
-    fn();  // Page has already loaded. Call immediately.
+    fn(); // Page has already loaded. Call immediately.
   } else {
     // Poll readyState.
-    const readyStateCheckInterval = setInterval(function() {
+    const readyStateCheckInterval = setInterval(function () {
       if (document.readyState === 'complete') {
         clearInterval(readyStateCheckInterval);
         fn();
@@ -359,66 +388,31 @@ export function runAfterPageLoad(fn: () => void) {
  * Builds an extension function that will map a dropdown value to a tooltip
  * string.
  *
- * This method includes multiple checks to ensure tooltips, dropdown options,
- * and message references are aligned. This aims to catch errors as early as
- * possible, without requiring developers to manually test tooltips under each
- * option. After the page is loaded, each tooltip text string will be checked
- * for matching message keys in the internationalized string table. Deferring
- * this until the page is loaded decouples loading dependencies. Later, upon
- * loading the first block of any given type, the extension will validate every
- * dropdown option has a matching tooltip in the lookupTable.  Errors are
- * reported as warnings in the console, and are never fatal.
- *
  * @param dropdownName The name of the field whose value is the key to the
  *     lookup table.
  * @param lookupTable The table of field values to tooltip text.
  * @returns The extension function.
  */
 export function buildTooltipForDropdown(
-    dropdownName: string, lookupTable: {[key: string]: string}): Function {
+  dropdownName: string,
+  lookupTable: {[key: string]: string},
+): (this: Block) => void {
   // List of block types already validated, to minimize duplicate warnings.
-  const blockTypesChecked: AnyDuringMigration[] = [];
+  const blockTypesChecked: string[] = [];
 
-  // Check the tooltip string messages for invalid references.
-  // Wait for load, in case Blockly.Msg is not yet populated.
-  // runAfterPageLoad() does not run in a Node.js environment due to lack
-  // of document object, in which case skip the validation.
-  if (typeof document === 'object') {  // Relies on document.readyState
-    runAfterPageLoad(function() {
-      for (const key in lookupTable) {
-        // Will print warnings if reference is missing.
-        parsing.checkMessageReferences(lookupTable[key]);
-      }
-    });
-  }
-
-  /** The actual extension. */
-  function extensionFn(this: Block) {
-    if (this.type && blockTypesChecked.indexOf(this.type) === -1) {
+  return function (this: Block) {
+    if (blockTypesChecked.indexOf(this.type) === -1) {
       checkDropdownOptionsInTable(this, dropdownName, lookupTable);
       blockTypesChecked.push(this.type);
     }
 
-    this.setTooltip(function(this: Block) {
-      const value = String(this.getFieldValue(dropdownName));
-      let tooltip = lookupTable[value];
-      if (tooltip === null) {
-        if (blockTypesChecked.indexOf(this.type) === -1) {
-          // Warn for missing values on generated tooltips.
-          let warning = 'No tooltip mapping for value ' + value + ' of field ' +
-              dropdownName;
-          if (this.type !== null) {
-            warning += ' of block type ' + this.type;
-          }
-          console.warn(warning + '.');
-        }
-      } else {
-        tooltip = parsing.replaceMessageReferences(tooltip);
-      }
-      return tooltip;
-    }.bind(this));
-  }
-  return extensionFn;
+    this.setTooltip(
+      function (this: Block) {
+        const value = String(this.getFieldValue(dropdownName));
+        return parsing.replaceMessageReferences(lookupTable[value]);
+      }.bind(this),
+    );
+  };
 }
 
 /**
@@ -430,18 +424,22 @@ export function buildTooltipForDropdown(
  * @param lookupTable The string lookup table
  */
 function checkDropdownOptionsInTable(
-    block: Block, dropdownName: string, lookupTable: {[key: string]: string}) {
-  // Validate all dropdown options have values.
+  block: Block,
+  dropdownName: string,
+  lookupTable: {[key: string]: string},
+) {
   const dropdown = block.getField(dropdownName);
-  if (dropdown instanceof FieldDropdown && !dropdown.isOptionListDynamic()) {
-    const options = dropdown.getOptions();
-    for (let i = 0; i < options.length; i++) {
-      const optionKey = options[i][1];  // label, then value
-      if (lookupTable[optionKey] === null) {
-        console.warn(
-            'No tooltip mapping for value ' + optionKey + ' of field ' +
-            dropdownName + ' of block type ' + block.type);
-      }
+  if (!(dropdown instanceof FieldDropdown) || dropdown.isOptionListDynamic()) {
+    return;
+  }
+
+  const options = dropdown.getOptions();
+  for (const [, key] of options) {
+    if (lookupTable[key] === undefined) {
+      console.warn(
+        `No tooltip mapping for value ${key} of field ` +
+          `${dropdownName} of block type ${block.type}.`,
+      );
     }
   }
 }
@@ -457,27 +455,19 @@ function checkDropdownOptionsInTable(
  * @returns The extension function.
  */
 export function buildTooltipWithFieldText(
-    msgTemplate: string, fieldName: string): Function {
-  // Check the tooltip string messages for invalid references.
-  // Wait for load, in case Blockly.Msg is not yet populated.
-  // runAfterPageLoad() does not run in a Node.js environment due to lack
-  // of document object, in which case skip the validation.
-  if (typeof document === 'object') {  // Relies on document.readyState
-    runAfterPageLoad(function() {
-      // Will print warnings if reference is missing.
-      parsing.checkMessageReferences(msgTemplate);
-    });
-  }
-
-  /** The actual extension. */
-  function extensionFn(this: Block) {
-    this.setTooltip(function(this: Block) {
-      const field = this.getField(fieldName);
-      return parsing.replaceMessageReferences(msgTemplate)
+  msgTemplate: string,
+  fieldName: string,
+): (this: Block) => void {
+  return function (this: Block) {
+    this.setTooltip(
+      function (this: Block) {
+        const field = this.getField(fieldName);
+        return parsing
+          .replaceMessageReferences(msgTemplate)
           .replace('%1', field ? field.getText() : '');
-    }.bind(this));
-  }
-  return extensionFn;
+      }.bind(this),
+    );
+  };
 }
 
 /**
@@ -488,10 +478,14 @@ export function buildTooltipWithFieldText(
  */
 function extensionParentTooltip(this: Block) {
   const tooltipWhenNotConnected = this.tooltip;
-  this.setTooltip(function(this: Block) {
-    const parent = this.getParent();
-    return parent && parent.getInputsInline() && parent.tooltip ||
-        tooltipWhenNotConnected;
-  }.bind(this));
+  this.setTooltip(
+    function (this: Block) {
+      const parent = this.getParent();
+      return (
+        (parent && parent.getInputsInline() && parent.tooltip) ||
+        tooltipWhenNotConnected
+      );
+    }.bind(this),
+  );
 }
 register('parent_tooltip_when_inline', extensionParentTooltip);

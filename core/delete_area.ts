@@ -10,14 +10,12 @@
  *
  * @class
  */
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.DeleteArea');
+// Former goog.module ID: Blockly.DeleteArea
 
 import {BlockSvg} from './block_svg.js';
 import {DragTarget} from './drag_target.js';
 import type {IDeleteArea} from './interfaces/i_delete_area.js';
 import type {IDraggable} from './interfaces/i_draggable.js';
-
 
 /**
  * Abstract class for a component that can delete a block or bubble that is
@@ -59,7 +57,7 @@ export class DeleteArea extends DragTarget implements IDeleteArea {
    */
   wouldDelete(element: IDraggable, couldConnect: boolean): boolean {
     if (element instanceof BlockSvg) {
-      const block = (element);
+      const block = element;
       const couldDeleteBlock = !block.getParent() && block.isDeletable();
       this.updateWouldDelete_(couldDeleteBlock && !couldConnect);
     } else {

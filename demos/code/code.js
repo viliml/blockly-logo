@@ -356,17 +356,17 @@ Code.renderContent = function() {
         Blockly.serialization.workspaces.save(Code.workspace), null, 2);
     jsonTextarea.focus();
   } else if (content.id === 'content_javascript') {
-    Code.attemptCodeGeneration(Blockly.JavaScript);
+    Code.attemptCodeGeneration(javascript.javascriptGenerator);
   } else if (content.id === 'content_python') {
-    Code.attemptCodeGeneration(Blockly.Python);
+    Code.attemptCodeGeneration(python.pythonGenerator);
   } else if (content.id === 'content_php') {
-    Code.attemptCodeGeneration(Blockly.PHP);
+    Code.attemptCodeGeneration(php.phpGenerator);
   } else if (content.id === 'content_dart') {
-    Code.attemptCodeGeneration(Blockly.Dart);
+    Code.attemptCodeGeneration(dart.dartGenerator);
   } else if (content.id === 'content_lua') {
-    Code.attemptCodeGeneration(Blockly.Lua);
+    Code.attemptCodeGeneration(lua.luaGenerator);
   } else if (content.id == 'content_logo') {
-    Code.attemptCodeGeneration(Blockly.Logo);
+    Code.attemptCodeGeneration(logo.logoGenerator);
   }
   if (typeof PR === 'object') {
     PR.prettyPrint();
@@ -397,7 +397,7 @@ Code.checkAllGeneratorFunctionsDefined = function(generator) {
   var missingBlockGenerators = [];
   for (var i = 0; i < blocks.length; i++) {
     var blockType = blocks[i].type;
-    if (!generator[blockType]) {
+    if (!generator.forBlock[blockType]) {
       if (missingBlockGenerators.indexOf(blockType) === -1) {
         missingBlockGenerators.push(blockType);
       }
@@ -479,7 +479,7 @@ Code.init = function() {
 
   // Add to reserved word list: Local variables in execution environment (runJS)
   // and the infinite loop detection function.
-  Blockly.JavaScript.addReservedWords('code,timeouts,checkTimeout');
+  javascript.javascriptGenerator.addReservedWords('code,timeouts,checkTimeout');
 
   Code.loadBlocks('');
 
@@ -592,15 +592,15 @@ Code.runJS = function(event) {
     event.preventDefault();
   }
 
-  Blockly.JavaScript.INFINITE_LOOP_TRAP = 'checkTimeout();\n';
+  javascript.javascriptGenerator.INFINITE_LOOP_TRAP = 'checkTimeout();\n';
   var timeouts = 0;
   var checkTimeout = function() {
     if (timeouts++ > 1000000) {
       throw MSG['timeout'];
     }
   };
-  var code = Blockly.JavaScript.workspaceToCode(Code.workspace);
-  Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+  var code = javascript.javascriptGenerator.workspaceToCode(Code.workspace);
+  javascript.javascriptGenerator.INFINITE_LOOP_TRAP = null;
   try {
     eval(code);
   } catch (e) {

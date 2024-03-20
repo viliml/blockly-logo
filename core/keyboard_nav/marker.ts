@@ -10,14 +10,12 @@
  *
  * @class
  */
-import * as goog from '../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.Marker');
+// Former goog.module ID: Blockly.Marker
 
 /* eslint-disable-next-line no-unused-vars */
 import type {MarkerSvg} from '../renderers/common/marker_svg.js';
 
 import type {ASTNode} from './ast_node.js';
-
 
 /**
  * Class for a marker.
@@ -25,12 +23,12 @@ import type {ASTNode} from './ast_node.js';
  */
 export class Marker {
   /** The colour of the marker. */
-  colour: string|null = null;
+  colour: string | null = null;
 
   /** The current location of the marker. */
   // AnyDuringMigration because:  Type 'null' is not assignable to type
   // 'ASTNode'.
-  private curNode_: ASTNode = null as AnyDuringMigration;
+  private curNode: ASTNode = null as AnyDuringMigration;
 
   /**
    * The object in charge of drawing the visual representation of the current
@@ -38,7 +36,7 @@ export class Marker {
    */
   // AnyDuringMigration because:  Type 'null' is not assignable to type
   // 'MarkerSvg'.
-  private drawer_: MarkerSvg = null as AnyDuringMigration;
+  private drawer: MarkerSvg = null as AnyDuringMigration;
 
   /** The type of the marker. */
   type = 'marker';
@@ -52,7 +50,7 @@ export class Marker {
    * @param drawer The object in charge of drawing the marker.
    */
   setDrawer(drawer: MarkerSvg) {
-    this.drawer_ = drawer;
+    this.drawer = drawer;
   }
 
   /**
@@ -61,7 +59,7 @@ export class Marker {
    * @returns The object in charge of drawing the marker.
    */
   getDrawer(): MarkerSvg {
-    return this.drawer_;
+    return this.drawer;
   }
 
   /**
@@ -70,7 +68,7 @@ export class Marker {
    * @returns The current field, connection, or block the marker is on.
    */
   getCurNode(): ASTNode {
-    return this.curNode_;
+    return this.curNode;
   }
 
   /**
@@ -81,10 +79,10 @@ export class Marker {
    * @param newNode The new location of the marker.
    */
   setCurNode(newNode: ASTNode) {
-    const oldNode = this.curNode_;
-    this.curNode_ = newNode;
-    if (this.drawer_) {
-      this.drawer_.draw(oldNode, this.curNode_);
+    const oldNode = this.curNode;
+    this.curNode = newNode;
+    if (this.drawer) {
+      this.drawer.draw(oldNode, this.curNode);
     }
   }
 
@@ -94,15 +92,15 @@ export class Marker {
    * @internal
    */
   draw() {
-    if (this.drawer_) {
-      this.drawer_.draw(this.curNode_, this.curNode_);
+    if (this.drawer) {
+      this.drawer.draw(this.curNode, this.curNode);
     }
   }
 
   /** Hide the marker SVG. */
   hide() {
-    if (this.drawer_) {
-      this.drawer_.hide();
+    if (this.drawer) {
+      this.drawer.hide();
     }
   }
 

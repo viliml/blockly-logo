@@ -4,28 +4,38 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.minimalist.Renderer');
+// Former goog.module ID: Blockly.minimalist.Renderer
 
 import type {BlockSvg} from '../../block_svg.js';
 import * as blockRendering from '../common/block_rendering.js';
 import type {RenderInfo as BaseRenderInfo} from '../common/info.js';
 import {Renderer as BaseRenderer} from '../common/renderer.js';
+import * as deprecation from '../../utils/deprecation.js';
 
 import {ConstantProvider} from './constants.js';
 import {Drawer} from './drawer.js';
 import {RenderInfo} from './info.js';
 
-
 /**
  * The minimalist renderer.
+ *
+ * @deprecated Use Blockly.blockRendering.Renderer instead. To be removed
+ *     in v11.
  */
 export class Renderer extends BaseRenderer {
   /**
    * @param name The renderer name.
+   * @deprecated Use Blockly.blockRendering.Renderer instead. To be removed
+   *     in v11.
    */
   constructor(name: string) {
     super(name);
+    deprecation.warn(
+      'Blockly.minimalist.Renderer',
+      'v10',
+      'v11',
+      'Blockly.blockRendering.Renderer',
+    );
   }
 
   /**
@@ -55,9 +65,11 @@ export class Renderer extends BaseRenderer {
    *     block.
    * @returns The drawer.
    */
-  protected override makeDrawer_(block: BlockSvg, info: BaseRenderInfo):
-      Drawer {
-    return new Drawer(block, (info as RenderInfo));
+  protected override makeDrawer_(
+    block: BlockSvg,
+    info: BaseRenderInfo,
+  ): Drawer {
+    return new Drawer(block, info as RenderInfo);
   }
 }
 

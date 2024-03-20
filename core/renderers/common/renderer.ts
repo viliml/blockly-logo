@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering.Renderer');
+// Former goog.module ID: Blockly.blockRendering.Renderer
 
 import type {Block} from '../../block.js';
 import type {BlockSvg} from '../../block_svg.js';
 import {Connection} from '../../connection.js';
 import {ConnectionType} from '../../connection_type.js';
-import {InsertionMarkerManager, PreviewType} from '../../insertion_marker_manager.js';
+import {
+  InsertionMarkerManager,
+  PreviewType,
+} from '../../insertion_marker_manager.js';
 import type {IRegistrable} from '../../interfaces/i_registrable.js';
 import type {Marker} from '../../keyboard_nav/marker.js';
 import type {RenderedConnection} from '../../rendered_connection.js';
@@ -19,14 +21,11 @@ import type {BlockStyle, Theme} from '../../theme.js';
 import type {WorkspaceSvg} from '../../workspace_svg.js';
 
 import {ConstantProvider} from './constants.js';
-import * as debug from './debug.js';
-import {Debug} from './debugger.js';
 import {Drawer} from './drawer.js';
 import type {IPathObject} from './i_path_object.js';
 import {RenderInfo} from './info.js';
 import {MarkerSvg} from './marker_svg.js';
 import {PathObject} from './path_object.js';
-
 
 /**
  * The base class for a block renderer.
@@ -40,7 +39,7 @@ export class Renderer implements IRegistrable {
   /**
    * Rendering constant overrides, passed in through options.
    */
-  protected overrides: object|null = null;
+  protected overrides: object | null = null;
 
   /**
    * @param name The renderer name.
@@ -65,7 +64,9 @@ export class Renderer implements IRegistrable {
    * @param opt_rendererOverrides Rendering constant overrides.
    */
   init(
-      theme: Theme, opt_rendererOverrides?: {[rendererConstant: string]: any}) {
+    theme: Theme,
+    opt_rendererOverrides?: {[rendererConstant: string]: any},
+  ) {
     this.constants_ = this.makeConstants_();
     if (opt_rendererOverrides) {
       this.overrides = opt_rendererOverrides;
@@ -86,8 +87,10 @@ export class Renderer implements IRegistrable {
    */
   createDom(svg: SVGElement, theme: Theme) {
     this.constants_.createDom(
-        svg, this.name + '-' + theme.name,
-        '.' + this.getClassName() + '.' + theme.getClassName());
+      svg,
+      this.name + '-' + theme.name,
+      '.' + this.getClassName() + '.' + theme.getClassName(),
+    );
   }
 
   /**
@@ -152,17 +155,6 @@ export class Renderer implements IRegistrable {
   }
 
   /**
-   * Create a new instance of the renderer's debugger.
-   *
-   * @returns The renderer debugger.
-   * @suppress {strictModuleDepCheck} Debug renderer only included in
-   * playground.
-   */
-  protected makeDebugger_(): Debug {
-    return new Debug(this.getConstants());
-  }
-
-  /**
    * Create a new instance of the renderer's marker drawer.
    *
    * @param workspace The workspace the marker belongs to.
@@ -181,7 +173,7 @@ export class Renderer implements IRegistrable {
    * @returns The renderer path object.
    */
   makePathObject(root: SVGElement, style: BlockStyle): IPathObject {
-    return new PathObject(root, style, (this.constants_));
+    return new PathObject(root, style, this.constants_);
   }
 
   /**
@@ -217,12 +209,18 @@ export class Renderer implements IRegistrable {
    * @returns Whether there is a home for the orphan or not.
    */
   protected orphanCanConnectAtEnd(
-      topBlock: BlockSvg, orphanBlock: BlockSvg, localType: number): boolean {
-    const orphanConnection = localType === ConnectionType.OUTPUT_VALUE ?
-        orphanBlock.outputConnection :
-        orphanBlock.previousConnection;
+    topBlock: BlockSvg,
+    orphanBlock: BlockSvg,
+    localType: number,
+  ): boolean {
+    const orphanConnection =
+      localType === ConnectionType.OUTPUT_VALUE
+        ? orphanBlock.outputConnection
+        : orphanBlock.previousConnection;
     return !!Connection.getConnectionForOrphanedConnection(
-        topBlock as Block, orphanConnection as Connection);
+      topBlock as Block,
+      orphanConnection as Connection,
+    );
   }
 
   /**
@@ -235,13 +233,22 @@ export class Renderer implements IRegistrable {
    * @returns The preview type to display.
    */
   getConnectionPreviewMethod(
-      closest: RenderedConnection, local: RenderedConnection,
-      topBlock: BlockSvg): PreviewType {
-    if (local.type === ConnectionType.OUTPUT_VALUE ||
-        local.type === ConnectionType.PREVIOUS_STATEMENT) {
-      if (!closest.isConnected() ||
-          this.orphanCanConnectAtEnd(
-              topBlock, closest.targetBlock() as BlockSvg, local.type)) {
+    closest: RenderedConnection,
+    local: RenderedConnection,
+    topBlock: BlockSvg,
+  ): PreviewType {
+    if (
+      local.type === ConnectionType.OUTPUT_VALUE ||
+      local.type === ConnectionType.PREVIOUS_STATEMENT
+    ) {
+      if (
+        !closest.isConnected() ||
+        this.orphanCanConnectAtEnd(
+          topBlock,
+          closest.targetBlock() as BlockSvg,
+          local.type,
+        )
+      ) {
         return InsertionMarkerManager.PREVIEW_TYPE.INSERTION_MARKER;
       }
       return InsertionMarkerManager.PREVIEW_TYPE.REPLACEMENT_FADE;
@@ -257,9 +264,6 @@ export class Renderer implements IRegistrable {
    * @internal
    */
   render(block: BlockSvg) {
-    if (debug.isDebuggerEnabled() && !block.renderingDebugger) {
-      block.renderingDebugger = this.makeDebugger_();
-    }
     const info = this.makeRenderInfo_(block);
     info.measure();
     this.makeDrawer_(block, info).draw();

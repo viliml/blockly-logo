@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering.BottomRow');
+// Former goog.module ID: Blockly.blockRendering.BottomRow
 
 import type {BlockSvg} from '../../block_svg.js';
 import type {ConstantProvider} from '../common/constants.js';
@@ -13,7 +12,6 @@ import type {ConstantProvider} from '../common/constants.js';
 import type {NextConnection} from './next_connection.js';
 import {Row} from './row.js';
 import {Types} from './types.js';
-
 
 /**
  * An object containing information about what elements are in the bottom row of
@@ -30,7 +28,7 @@ export class BottomRow extends Row {
   /**
    * The next connection on the row, if any.
    */
-  connection: NextConnection|null = null;
+  connection: NextConnection | null = null;
 
   /**
    * The amount that the bottom of the block extends below the horizontal

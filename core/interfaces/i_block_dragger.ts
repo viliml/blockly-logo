@@ -4,17 +4,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../closure/goog/goog.js';
 import type {Coordinate} from '../utils/coordinate.js';
 import type {BlockSvg} from '../block_svg.js';
-goog.declareModuleId('Blockly.IBlockDragger');
+// Former goog.module ID: Blockly.IBlockDragger
 
 /**
  * A block dragger interface.
  */
 export interface IBlockDragger {
   /**
-   * Start dragging a block.  This includes moving it to the drag surface.
+   * Start dragging a block.
    *
    * @param currentDragDeltaXY How far the pointer has moved from the position
    *     at mouse down, in pixel units.

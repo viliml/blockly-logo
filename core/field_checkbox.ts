@@ -9,8 +9,7 @@
  *
  * @class
  */
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.FieldCheckbox');
+// Former goog.module ID: Blockly.FieldCheckbox
 
 // Unused import preserved for side-effects. Remove if unneeded.
 import './events/events_block_change.js';
@@ -19,8 +18,8 @@ import * as dom from './utils/dom.js';
 import {Field, FieldConfig, FieldValidator} from './field.js';
 import * as fieldRegistry from './field_registry.js';
 
-type BoolString = 'TRUE'|'FALSE';
-type CheckboxBool = BoolString|boolean;
+type BoolString = 'TRUE' | 'FALSE';
+type CheckboxBool = BoolString | boolean;
 
 /**
  * Class for a checkbox field.
@@ -28,7 +27,7 @@ type CheckboxBool = BoolString|boolean;
 export class FieldCheckbox extends Field<CheckboxBool> {
   /** Default character for the checkmark. */
   static readonly CHECK_CHAR = '✓';
-  private checkChar_: string;
+  private checkChar: string;
 
   /**
    * Serializable fields are saved by the serializer, non-serializable fields
@@ -45,7 +44,7 @@ export class FieldCheckbox extends Field<CheckboxBool> {
    * NOTE: The default value is set in `Field`, so maintain that value instead
    * of overwriting it here or in the constructor.
    */
-  override value_: boolean|null = this.value_;
+  override value_: boolean | null = this.value_;
 
   /**
    * @param value The initial value of the field. Should either be 'TRUE',
@@ -62,15 +61,17 @@ export class FieldCheckbox extends Field<CheckboxBool> {
    * for a list of properties this parameter supports.
    */
   constructor(
-      value?: CheckboxBool|typeof Field.SKIP_SETUP,
-      validator?: FieldCheckboxValidator, config?: FieldCheckboxConfig) {
+    value?: CheckboxBool | typeof Field.SKIP_SETUP,
+    validator?: FieldCheckboxValidator,
+    config?: FieldCheckboxConfig,
+  ) {
     super(Field.SKIP_SETUP);
 
     /**
      * Character for the check mark. Used to apply a different check mark
      * character to individual fields.
      */
-    this.checkChar_ = FieldCheckbox.CHECK_CHAR;
+    this.checkChar = FieldCheckbox.CHECK_CHAR;
 
     if (value === Field.SKIP_SETUP) return;
     if (config) {
@@ -89,7 +90,7 @@ export class FieldCheckbox extends Field<CheckboxBool> {
    */
   protected override configure_(config: FieldCheckboxConfig) {
     super.configure_(config);
-    if (config.checkCharacter) this.checkChar_ = config.checkCharacter;
+    if (config.checkCharacter) this.checkChar = config.checkCharacter;
   }
 
   /**
@@ -108,8 +109,6 @@ export class FieldCheckbox extends Field<CheckboxBool> {
 
   /**
    * Create the block UI for this checkbox.
-   *
-   * @internal
    */
   override initView() {
     super.initView();
@@ -127,7 +126,7 @@ export class FieldCheckbox extends Field<CheckboxBool> {
   }
 
   override getDisplayText_() {
-    return this.checkChar_;
+    return this.checkChar;
   }
 
   /**
@@ -136,8 +135,8 @@ export class FieldCheckbox extends Field<CheckboxBool> {
    * @param character The character to use for the check mark, or null to use
    *     the default.
    */
-  setCheckCharacter(character: string|null) {
-    this.checkChar_ = character || FieldCheckbox.CHECK_CHAR;
+  setCheckCharacter(character: string | null) {
+    this.checkChar = character || FieldCheckbox.CHECK_CHAR;
     this.forceRerender();
   }
 
@@ -152,8 +151,9 @@ export class FieldCheckbox extends Field<CheckboxBool> {
    * @param newValue The input value.
    * @returns A valid value ('TRUE' or 'FALSE), or null if invalid.
    */
-  protected override doClassValidation_(newValue?: AnyDuringMigration):
-      BoolString|null {
+  protected override doClassValidation_(
+    newValue?: AnyDuringMigration,
+  ): BoolString | null {
     if (newValue === true || newValue === 'TRUE') {
       return 'TRUE';
     }
@@ -191,7 +191,7 @@ export class FieldCheckbox extends Field<CheckboxBool> {
    *
    * @returns The boolean value of this field.
    */
-  getValueBoolean(): boolean|null {
+  getValueBoolean(): boolean | null {
     return this.value_;
   }
 
@@ -213,7 +213,7 @@ export class FieldCheckbox extends Field<CheckboxBool> {
    * @param value The value to convert.
    * @returns The converted value.
    */
-  private convertValueToBool_(value: CheckboxBool|null): boolean {
+  private convertValueToBool_(value: CheckboxBool | null): boolean {
     if (typeof value === 'string') return value === 'TRUE';
     return !!value;
   }

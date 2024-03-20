@@ -4,12 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering');
+// Former goog.module ID: Blockly.blockRendering
 
 import * as registry from '../../registry.js';
 import type {Theme} from '../../theme.js';
-import * as deprecation from '../../utils/deprecation.js';
 import {Measurable} from '../measurables/base.js';
 import {BottomRow} from '../measurables/bottom_row.js';
 import {Connection} from '../measurables/connection.js';
@@ -33,9 +31,6 @@ import {StatementInput} from '../measurables/statement_input.js';
 import {TopRow} from '../measurables/top_row.js';
 import {Types} from '../measurables/types.js';
 
-import {ConstantProvider} from './constants.js';
-import * as debug from './debug.js';
-import {Debug} from './debugger.js';
 import {Drawer} from './drawer.js';
 import type {IPathObject} from './i_path_object.js';
 import {RenderInfo} from './info.js';
@@ -64,21 +59,6 @@ export function unregister(name: string) {
 }
 
 /**
- * Turn off the blocks debugger.
- *
- * @deprecated Use the debug renderer in **\@blockly/dev-tools** (See {@link
- *     https://www.npmjs.com/package/@blockly/dev-tools}.)
- * @internal
- */
-export function stopDebugger() {
-  deprecation.warn(
-      'Blockly.blockRendering.stopDebugger()', 'September 2021',
-      'September 2022',
-      'the debug renderer in @blockly/dev-tools (See https://www.npmjs.com/package/@blockly/dev-tools.)');
-  debug.stopDebugger();
-}
-
-/**
  * Initialize anything needed for rendering (constants, etc).
  *
  * @param name Name of the renderer to initialize.
@@ -89,8 +69,10 @@ export function stopDebugger() {
  * @internal
  */
 export function init(
-    name: string, theme: Theme,
-    opt_rendererOverrides?: {[rendererConstant: string]: any}): Renderer {
+  name: string,
+  theme: Theme,
+  opt_rendererOverrides?: {[rendererConstant: string]: any},
+): Renderer {
   const rendererClass = registry.getClass(registry.Type.RENDERER, name);
   const renderer = new rendererClass!(name);
   renderer.init(theme, opt_rendererOverrides);
@@ -98,8 +80,6 @@ export function init(
 }
 export {BottomRow};
 export {Connection};
-export {ConstantProvider};
-export {Debug};
 export {Drawer};
 export {ExternalValueInput};
 export {Field};
@@ -126,3 +106,15 @@ export {SquareCorner};
 export {StatementInput};
 export {TopRow};
 export {Types};
+
+export {
+  OutsideCorners,
+  InsideCorners,
+  StartHat,
+  Notch,
+  PuzzleTab,
+  JaggedTeeth,
+  BaseShape,
+  DynamicShape,
+  ConstantProvider,
+} from './constants.js';

@@ -11,9 +11,7 @@
  *
  * @class
  */
-import * as goog from '../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.utils.Size');
-
+// Former goog.module ID: Blockly.utils.Size
 
 /**
  * Class for representing sizes consisting of a width and height.
@@ -23,7 +21,10 @@ export class Size {
    * @param width Width.
    * @param height Height.
    */
-  constructor(public width: number, public height: number) {}
+  constructor(
+    public width: number,
+    public height: number,
+  ) {}
 
   /**
    * Compares sizes for equality.
@@ -33,7 +34,7 @@ export class Size {
    * @returns True iff the sizes have equal widths and equal heights, or if both
    *     are null.
    */
-  static equals(a: Size|null, b: Size|null): boolean {
+  static equals(a: Size | null, b: Size | null): boolean {
     if (a === b) {
       return true;
     }

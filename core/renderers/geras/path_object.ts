@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.geras.PathObject');
+// Former goog.module ID: Blockly.geras.PathObject
 
 import type {BlockSvg} from '../../block_svg.js';
 import type {BlockStyle} from '../../theme.js';
@@ -15,7 +14,6 @@ import {Svg} from '../../utils/svg.js';
 import {PathObject as BasePathObject} from '../common/path_object.js';
 
 import type {ConstantProvider} from './constants.js';
-
 
 /**
  * An object that handles creating and setting each of the SVG elements
@@ -36,13 +34,17 @@ export class PathObject extends BasePathObject {
    * @param constants The renderer's constants.
    */
   constructor(
-      root: SVGElement, style: BlockStyle,
-      public override constants: ConstantProvider) {
+    root: SVGElement,
+    style: BlockStyle,
+    public override constants: ConstantProvider,
+  ) {
     super(root, style, constants);
 
     /** The dark path of the block. */
-    this.svgPathDark = dom.createSvgElement(
-        Svg.PATH, {'class': 'blocklyPathDark', 'transform': 'translate(1,1)'});
+    this.svgPathDark = dom.createSvgElement(Svg.PATH, {
+      'class': 'blocklyPathDark',
+      'transform': 'translate(1,1)',
+    });
     // SVG draw order is based on the order of elements (top most = back most)
     // So we need to insert the dark path before the base path to make sure it
     // gets drawn first.
@@ -50,7 +52,10 @@ export class PathObject extends BasePathObject {
 
     /** The light path of the block. */
     this.svgPathLight = dom.createSvgElement(
-        Svg.PATH, {'class': 'blocklyPathLight'}, this.svgRoot);
+      Svg.PATH,
+      {'class': 'blocklyPathLight'},
+      this.svgRoot,
+    );
   }
 
   override setPath(mainPath: string) {
@@ -79,8 +84,9 @@ export class PathObject extends BasePathObject {
     this.svgPathDark.style.display = '';
     if (!this.style.colourTertiary) {
       throw new Error(
-          'The renderer did not properly initialize the tertiary colour of ' +
-          'the block style');
+        'The renderer did not properly initialize the tertiary colour of ' +
+          'the block style',
+      );
     }
     this.svgPathLight.setAttribute('stroke', this.style.colourTertiary);
     this.svgPathDark.setAttribute('fill', this.colourDark);
@@ -93,13 +99,15 @@ export class PathObject extends BasePathObject {
   override setStyle(blockStyle: BlockStyle) {
     this.style = blockStyle;
     this.colourDark =
-        colour.blend('#000', this.style.colourPrimary, 0.2) || this.colourDark;
+      colour.blend('#000', this.style.colourPrimary, 0.2) || this.colourDark;
   }
 
   override updateHighlighted(highlighted: boolean) {
     if (highlighted) {
       this.svgPath.setAttribute(
-          'filter', 'url(#' + this.constants.embossFilterId + ')');
+        'filter',
+        'url(#' + this.constants.embossFilterId + ')',
+      );
       this.svgPathLight.style.display = 'none';
     } else {
       this.svgPath.setAttribute('filter', 'none');
@@ -112,8 +120,9 @@ export class PathObject extends BasePathObject {
       this.svgPathLight.style.display = 'none';
       if (!this.style.colourSecondary) {
         throw new Error(
-            'The renderer did not properly initialize the secondary colour ' +
-            'of the block style block style');
+          'The renderer did not properly initialize the secondary colour ' +
+            'of the block style block style',
+        );
       }
       this.svgPathDark.setAttribute('fill', this.style.colourSecondary);
       this.svgPath.setAttribute('stroke', 'none');

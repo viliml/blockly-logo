@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering.Row');
+// Former goog.module ID: Blockly.blockRendering.Row
 
 import type {ConstantProvider} from '../common/constants.js';
 
@@ -13,7 +12,6 @@ import type {Measurable} from './base.js';
 import type {InRowSpacer} from './in_row_spacer.js';
 import type {InputConnection} from './input_connection.js';
 import {Types} from './types.js';
-
 
 /**
  * An object representing a single row on a rendered block and all of its
@@ -90,7 +88,7 @@ export class Row {
   hasInlineInput = false;
 
   /**
-   * Whether the row has any dummy inputs.
+   * Whether the row has any dummy inputs or end-row inputs.
    */
   hasDummyInput = false;
 
@@ -103,7 +101,7 @@ export class Row {
   /**
    * Alignment of the row.
    */
-  align: number|null = null;
+  align: number | null = null;
 
   protected readonly constants_: ConstantProvider;
 
@@ -125,7 +123,7 @@ export class Row {
    *
    * @returns The last input on the row, or null.
    */
-  getLastInput(): InputConnection|null {
+  getLastInput(): InputConnection | null {
     // TODO: Consider moving this to InputRow, if possible.
     for (let i = this.elements.length - 1; i >= 0; i--) {
       const elem = this.elements[i];
@@ -166,7 +164,7 @@ export class Row {
    *
    * @returns The first spacer element on this row.
    */
-  getFirstSpacer(): InRowSpacer|null {
+  getFirstSpacer(): InRowSpacer | null {
     for (let i = 0; i < this.elements.length; i++) {
       const elem = this.elements[i];
       if (Types.isSpacer(elem)) {
@@ -181,7 +179,7 @@ export class Row {
    *
    * @returns The last spacer element on this row.
    */
-  getLastSpacer(): InRowSpacer|null {
+  getLastSpacer(): InRowSpacer | null {
     for (let i = this.elements.length - 1; i >= 0; i--) {
       const elem = this.elements[i];
       if (Types.isSpacer(elem)) {

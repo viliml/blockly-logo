@@ -7,15 +7,12 @@
 /**
  * @fileoverview Generating Dart for dynamic variable blocks.
  */
-'use strict';
 
-goog.module('Blockly.Dart.variablesDynamic');
-
-const {dartGenerator: Dart} = goog.require('Blockly.Dart');
-/** @suppress {extraRequire} */
-goog.require('Blockly.Dart.variables');
+// Former goog.module ID: Blockly.Dart.variablesDynamic
 
 
-// Dart is dynamically typed.
-Dart['variables_get_dynamic'] = Dart['variables_get'];
-Dart['variables_set_dynamic'] = Dart['variables_set'];
+// generator is dynamically typed.
+export {
+  variables_get as variables_get_dynamic,
+  variables_set as variables_set_dynamic,
+} from './variables.js';

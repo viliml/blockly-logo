@@ -9,15 +9,13 @@
  *
  * @class
  */
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.VariableModel');
+// Former goog.module ID: Blockly.VariableModel
 
 // Unused import preserved for side-effects. Remove if unneeded.
 import './events/events_var_create.js';
 
 import * as idGenerator from './utils/idgenerator.js';
 import type {Workspace} from './workspace.js';
-
 
 /**
  * Class for a variable model.
@@ -39,8 +37,11 @@ export class VariableModel {
    * @param opt_id The unique ID of the variable. This will default to a UUID.
    */
   constructor(
-      public workspace: Workspace, public name: string, opt_type?: string,
-      opt_id?: string) {
+    public workspace: Workspace,
+    public name: string,
+    opt_type?: string,
+    opt_id?: string,
+  ) {
     /**
      * The type of the variable, such as 'int' or 'sound_effect'. This may be
      * used to build a list of variables of a specific type. By default this is

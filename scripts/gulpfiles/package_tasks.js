@@ -16,7 +16,7 @@ gulp.insert = require('gulp-insert');
 gulp.umd = require('gulp-umd');
 gulp.replace = require('gulp-replace');
 
-const path = require('path').posix;
+const path = require('path');
 const fs = require('fs');
 const {rimraf} = require('rimraf');
 const build = require('./build_tasks');

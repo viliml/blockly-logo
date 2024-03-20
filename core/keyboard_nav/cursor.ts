@@ -10,14 +10,12 @@
  *
  * @class
  */
-import * as goog from '../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.Cursor');
+// Former goog.module ID: Blockly.Cursor
 
 import * as registry from '../registry.js';
 
 import {ASTNode} from './ast_node.js';
 import {Marker} from './marker.js';
-
 
 /**
  * Class for a cursor.
@@ -36,16 +34,19 @@ export class Cursor extends Marker {
    * @returns The next element, or null if the current node is not set or there
    *     is no next value.
    */
-  next(): ASTNode|null {
+  next(): ASTNode | null {
     const curNode = this.getCurNode();
     if (!curNode) {
       return null;
     }
 
     let newNode = curNode.next();
-    while (newNode && newNode.next() &&
-           (newNode.getType() === ASTNode.types.NEXT ||
-            newNode.getType() === ASTNode.types.BLOCK)) {
+    while (
+      newNode &&
+      newNode.next() &&
+      (newNode.getType() === ASTNode.types.NEXT ||
+        newNode.getType() === ASTNode.types.BLOCK)
+    ) {
       newNode = newNode.next();
     }
 
@@ -61,15 +62,17 @@ export class Cursor extends Marker {
    * @returns The in element, or null if the current node is not set or there is
    *     no in value.
    */
-  in(): ASTNode|null {
-    let curNode: ASTNode|null = this.getCurNode();
+  in(): ASTNode | null {
+    let curNode: ASTNode | null = this.getCurNode();
     if (!curNode) {
       return null;
     }
     // If we are on a previous or output connection, go to the block level
     // before performing next operation.
-    if (curNode.getType() === ASTNode.types.PREVIOUS ||
-        curNode.getType() === ASTNode.types.OUTPUT) {
+    if (
+      curNode.getType() === ASTNode.types.PREVIOUS ||
+      curNode.getType() === ASTNode.types.OUTPUT
+    ) {
       curNode = curNode.next();
     }
     const newNode = curNode?.in() ?? null;
@@ -86,16 +89,19 @@ export class Cursor extends Marker {
    * @returns The previous element, or null if the current node is not set or
    *     there is no previous value.
    */
-  prev(): ASTNode|null {
+  prev(): ASTNode | null {
     const curNode = this.getCurNode();
     if (!curNode) {
       return null;
     }
     let newNode = curNode.prev();
 
-    while (newNode && newNode.prev() &&
-           (newNode.getType() === ASTNode.types.NEXT ||
-            newNode.getType() === ASTNode.types.BLOCK)) {
+    while (
+      newNode &&
+      newNode.prev() &&
+      (newNode.getType() === ASTNode.types.NEXT ||
+        newNode.getType() === ASTNode.types.BLOCK)
+    ) {
       newNode = newNode.prev();
     }
 
@@ -111,7 +117,7 @@ export class Cursor extends Marker {
    * @returns The out element, or null if the current node is not set or there
    *     is no out value.
    */
-  out(): ASTNode|null {
+  out(): ASTNode | null {
     const curNode = this.getCurNode();
     if (!curNode) {
       return null;

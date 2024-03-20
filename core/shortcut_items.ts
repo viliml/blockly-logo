@@ -4,18 +4,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.ShortcutItems');
+// Former goog.module ID: Blockly.ShortcutItems
 
 import {BlockSvg} from './block_svg.js';
 import * as clipboard from './clipboard.js';
 import * as common from './common.js';
 import {Gesture} from './gesture.js';
-import type {ICopyable} from './interfaces/i_copyable.js';
+import {ICopyData, isCopyable} from './interfaces/i_copyable.js';
 import {KeyboardShortcut, ShortcutRegistry} from './shortcut_registry.js';
 import {KeyCodes} from './utils/keycodes.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
-
 
 /**
  * Object holding the names of the default shortcut items.
@@ -58,8 +56,11 @@ export function registerDelete() {
     name: names.DELETE,
     preconditionFn(workspace) {
       const selected = common.getSelected();
-      return !workspace.options.readOnly && selected != null &&
-          selected.isDeletable();
+      return (
+        !workspace.options.readOnly &&
+        selected != null &&
+        selected.isDeletable()
+      );
     },
     callback(workspace, e) {
       // Delete or backspace.
@@ -79,33 +80,46 @@ export function registerDelete() {
   ShortcutRegistry.registry.register(deleteShortcut);
 }
 
+let copyData: ICopyData | null = null;
+let copyWorkspace: WorkspaceSvg | null = null;
+
 /**
  * Keyboard shortcut to copy a block on ctrl+c, cmd+c, or alt+c.
  */
 export function registerCopy() {
-  const ctrlC = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.C, [KeyCodes.CTRL]);
-  const altC =
-      ShortcutRegistry.registry.createSerializedKey(KeyCodes.C, [KeyCodes.ALT]);
-  const metaC = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.C, [KeyCodes.META]);
+  const ctrlC = ShortcutRegistry.registry.createSerializedKey(KeyCodes.C, [
+    KeyCodes.CTRL,
+  ]);
+  const altC = ShortcutRegistry.registry.createSerializedKey(KeyCodes.C, [
+    KeyCodes.ALT,
+  ]);
+  const metaC = ShortcutRegistry.registry.createSerializedKey(KeyCodes.C, [
+    KeyCodes.META,
+  ]);
 
   const copyShortcut: KeyboardShortcut = {
     name: names.COPY,
     preconditionFn(workspace) {
       const selected = common.getSelected();
-      return !workspace.options.readOnly && !Gesture.inProgress() &&
-          selected != null && selected.isDeletable() && selected.isMovable();
+      return (
+        !workspace.options.readOnly &&
+        !Gesture.inProgress() &&
+        selected != null &&
+        selected.isDeletable() &&
+        selected.isMovable() &&
+        isCopyable(selected)
+      );
     },
     callback(workspace, e) {
       // Prevent the default copy behavior, which may beep or otherwise indicate
       // an error due to the lack of a selection.
       e.preventDefault();
-      // AnyDuringMigration because:  Property 'hideChaff' does not exist on
-      // type 'Workspace'.
-      (workspace as AnyDuringMigration).hideChaff();
-      clipboard.copy(common.getSelected() as ICopyable);
-      return true;
+      workspace.hideChaff();
+      const selected = common.getSelected();
+      if (!selected || !isCopyable(selected)) return false;
+      copyData = selected.toCopyData();
+      copyWorkspace = workspace;
+      return !!copyData;
     },
     keyCodes: [ctrlC, altC, metaC],
   };
@@ -116,29 +130,35 @@ export function registerCopy() {
  * Keyboard shortcut to copy and delete a block on ctrl+x, cmd+x, or alt+x.
  */
 export function registerCut() {
-  const ctrlX = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.X, [KeyCodes.CTRL]);
-  const altX =
-      ShortcutRegistry.registry.createSerializedKey(KeyCodes.X, [KeyCodes.ALT]);
-  const metaX = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.X, [KeyCodes.META]);
+  const ctrlX = ShortcutRegistry.registry.createSerializedKey(KeyCodes.X, [
+    KeyCodes.CTRL,
+  ]);
+  const altX = ShortcutRegistry.registry.createSerializedKey(KeyCodes.X, [
+    KeyCodes.ALT,
+  ]);
+  const metaX = ShortcutRegistry.registry.createSerializedKey(KeyCodes.X, [
+    KeyCodes.META,
+  ]);
 
   const cutShortcut: KeyboardShortcut = {
     name: names.CUT,
     preconditionFn(workspace) {
       const selected = common.getSelected();
-      return !workspace.options.readOnly && !Gesture.inProgress() &&
-          selected != null && selected instanceof BlockSvg &&
-          selected.isDeletable() && selected.isMovable() &&
-          !selected.workspace!.isFlyout;
+      return (
+        !workspace.options.readOnly &&
+        !Gesture.inProgress() &&
+        selected != null &&
+        selected instanceof BlockSvg &&
+        selected.isDeletable() &&
+        selected.isMovable() &&
+        !selected.workspace!.isFlyout
+      );
     },
-    callback() {
+    callback(workspace) {
       const selected = common.getSelected();
-      if (!selected) {
-        // Shouldn't happen but appeases the type system
-        return false;
-      }
-      clipboard.copy(selected);
+      if (!selected || !isCopyable(selected)) return false;
+      copyData = selected.toCopyData();
+      copyWorkspace = workspace;
       (selected as BlockSvg).checkAndDelete();
       return true;
     },
@@ -152,12 +172,15 @@ export function registerCut() {
  * Keyboard shortcut to paste a block on ctrl+v, cmd+v, or alt+v.
  */
 export function registerPaste() {
-  const ctrlV = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.V, [KeyCodes.CTRL]);
-  const altV =
-      ShortcutRegistry.registry.createSerializedKey(KeyCodes.V, [KeyCodes.ALT]);
-  const metaV = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.V, [KeyCodes.META]);
+  const ctrlV = ShortcutRegistry.registry.createSerializedKey(KeyCodes.V, [
+    KeyCodes.CTRL,
+  ]);
+  const altV = ShortcutRegistry.registry.createSerializedKey(KeyCodes.V, [
+    KeyCodes.ALT,
+  ]);
+  const metaV = ShortcutRegistry.registry.createSerializedKey(KeyCodes.V, [
+    KeyCodes.META,
+  ]);
 
   const pasteShortcut: KeyboardShortcut = {
     name: names.PASTE,
@@ -165,7 +188,8 @@ export function registerPaste() {
       return !workspace.options.readOnly && !Gesture.inProgress();
     },
     callback() {
-      return !!(clipboard.paste());
+      if (!copyData || !copyWorkspace) return false;
+      return !!clipboard.paste(copyData, copyWorkspace);
     },
     keyCodes: [ctrlV, altV, metaV],
   };
@@ -177,12 +201,15 @@ export function registerPaste() {
  * Keyboard shortcut to undo the previous action on ctrl+z, cmd+z, or alt+z.
  */
 export function registerUndo() {
-  const ctrlZ = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.Z, [KeyCodes.CTRL]);
-  const altZ =
-      ShortcutRegistry.registry.createSerializedKey(KeyCodes.Z, [KeyCodes.ALT]);
-  const metaZ = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.Z, [KeyCodes.META]);
+  const ctrlZ = ShortcutRegistry.registry.createSerializedKey(KeyCodes.Z, [
+    KeyCodes.CTRL,
+  ]);
+  const altZ = ShortcutRegistry.registry.createSerializedKey(KeyCodes.Z, [
+    KeyCodes.ALT,
+  ]);
+  const metaZ = ShortcutRegistry.registry.createSerializedKey(KeyCodes.Z, [
+    KeyCodes.META,
+  ]);
 
   const undoShortcut: KeyboardShortcut = {
     name: names.UNDO,
@@ -205,15 +232,22 @@ export function registerUndo() {
  * or alt+shift+z.
  */
 export function registerRedo() {
-  const ctrlShiftZ = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.Z, [KeyCodes.SHIFT, KeyCodes.CTRL]);
-  const altShiftZ = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.Z, [KeyCodes.SHIFT, KeyCodes.ALT]);
-  const metaShiftZ = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.Z, [KeyCodes.SHIFT, KeyCodes.META]);
+  const ctrlShiftZ = ShortcutRegistry.registry.createSerializedKey(KeyCodes.Z, [
+    KeyCodes.SHIFT,
+    KeyCodes.CTRL,
+  ]);
+  const altShiftZ = ShortcutRegistry.registry.createSerializedKey(KeyCodes.Z, [
+    KeyCodes.SHIFT,
+    KeyCodes.ALT,
+  ]);
+  const metaShiftZ = ShortcutRegistry.registry.createSerializedKey(KeyCodes.Z, [
+    KeyCodes.SHIFT,
+    KeyCodes.META,
+  ]);
   // Ctrl-y is redo in Windows.  Command-y is never valid on Macs.
-  const ctrlY = ShortcutRegistry.registry.createSerializedKey(
-      KeyCodes.Y, [KeyCodes.CTRL]);
+  const ctrlY = ShortcutRegistry.registry.createSerializedKey(KeyCodes.Y, [
+    KeyCodes.CTRL,
+  ]);
 
   const redoShortcut: KeyboardShortcut = {
     name: names.REDO,

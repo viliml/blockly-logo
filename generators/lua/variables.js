@@ -7,25 +7,23 @@
 /**
  * @fileoverview Generating Lua for variable blocks.
  */
-'use strict';
 
-goog.module('Blockly.Lua.variables');
+// Former goog.module ID: Blockly.Lua.variables
 
-const {NameType} = goog.require('Blockly.Names');
-const {luaGenerator: Lua} = goog.require('Blockly.Lua');
+import {Order} from './lua_generator.js';
 
 
-Lua['variables_get'] = function(block) {
+export function variables_get(block, generator) {
   // Variable getter.
   const code =
-      Lua.nameDB_.getName(block.getFieldValue('VAR'), NameType.VARIABLE);
-  return [code, Lua.ORDER_ATOMIC];
+      generator.getVariableName(block.getFieldValue('VAR'));
+  return [code, Order.ATOMIC];
 };
 
-Lua['variables_set'] = function(block) {
+export function variables_set(block, generator) {
   // Variable setter.
-  const argument0 = Lua.valueToCode(block, 'VALUE', Lua.ORDER_NONE) || '0';
+  const argument0 = generator.valueToCode(block, 'VALUE', Order.NONE) || '0';
   const varName =
-      Lua.nameDB_.getName(block.getFieldValue('VAR'), NameType.VARIABLE);
+      generator.getVariableName(block.getFieldValue('VAR'));
   return varName + ' = ' + argument0 + '\n';
 };

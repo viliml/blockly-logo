@@ -4,11 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.Themes.Classic');
+// Former goog.module ID: Blockly.Themes.Classic
 
 import {Theme} from '../theme.js';
-
 
 const defaultBlockStyles = {
   'colour_blocks': {'colourPrimary': '20'},
@@ -39,5 +37,4 @@ const categoryStyles = {
  * Classic theme.
  * Contains multi-coloured border to create shadow effect.
  */
-export const Classic = new Theme(
-    'classic', defaultBlockStyles as AnyDuringMigration, categoryStyles);
+export const Classic = new Theme('classic', defaultBlockStyles, categoryStyles);

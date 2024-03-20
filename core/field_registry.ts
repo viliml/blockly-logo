@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.fieldRegistry');
+// Former goog.module ID: Blockly.fieldRegistry
 
 import type {Field, FieldProto} from './field.js';
 import * as registry from './registry.js';
@@ -50,7 +49,7 @@ export function unregister(type: string) {
  *     given type name
  * @internal
  */
-export function fromJson<T>(options: RegistryOptions): Field<T>|null {
+export function fromJson<T>(options: RegistryOptions): Field<T> | null {
   return TEST_ONLY.fromJsonInternal(options);
 }
 
@@ -59,14 +58,16 @@ export function fromJson<T>(options: RegistryOptions): Field<T>|null {
  *
  * @param options
  */
-function fromJsonInternal<T>(options: RegistryOptions): Field<T>|null {
+function fromJsonInternal<T>(options: RegistryOptions): Field<T> | null {
   const fieldObject = registry.getObject(registry.Type.FIELD, options.type);
   if (!fieldObject) {
     console.warn(
-        'Blockly could not create a field of type ' + options['type'] +
+      'Blockly could not create a field of type ' +
+        options['type'] +
         '. The field is probably not being registered. This could be because' +
         ' the file is not loaded, the field does not register itself (Issue' +
-        ' #1584), or the registration is not being reached.');
+        ' #1584), or the registration is not being reached.',
+    );
     return null;
   } else if (typeof (fieldObject as any).fromJson !== 'function') {
     throw new TypeError('returned Field was not a IRegistrableField');

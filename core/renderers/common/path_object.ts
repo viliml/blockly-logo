@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering.PathObject');
+// Former goog.module ID: Blockly.blockRendering.PathObject
 
 import type {BlockSvg} from '../../block_svg.js';
 import type {Connection} from '../../connection.js';
@@ -15,7 +14,6 @@ import {Svg} from '../../utils/svg.js';
 
 import type {ConstantProvider} from './constants.js';
 import type {IPathObject} from './i_path_object.js';
-
 
 /**
  * An object that handles creating and setting each of the SVG elements
@@ -29,13 +27,13 @@ export class PathObject implements IPathObject {
    * Holds the cursors svg element when the cursor is attached to the block.
    * This is null if there is no cursor on the block.
    */
-  cursorSvg: SVGElement|null = null;
+  cursorSvg: SVGElement | null = null;
 
   /**
    * Holds the markers svg element when the marker is attached to the block.
    * This is null if there is no marker on the block.
    */
-  markerSvg: SVGElement|null = null;
+  markerSvg: SVGElement | null = null;
 
   constants: ConstantProvider;
   style: BlockStyle;
@@ -46,14 +44,20 @@ export class PathObject implements IPathObject {
    * @param constants The renderer's constants.
    */
   constructor(
-      root: SVGElement, style: BlockStyle, constants: ConstantProvider) {
+    root: SVGElement,
+    style: BlockStyle,
+    constants: ConstantProvider,
+  ) {
     this.constants = constants;
     this.style = style;
     this.svgRoot = root;
 
     /** The primary path of the block. */
-    this.svgPath =
-        dom.createSvgElement(Svg.PATH, {'class': 'blocklyPath'}, this.svgRoot);
+    this.svgPath = dom.createSvgElement(
+      Svg.PATH,
+      {'class': 'blocklyPath'},
+      this.svgRoot,
+    );
   }
 
   /**
@@ -159,7 +163,9 @@ export class PathObject implements IPathObject {
   updateHighlighted(enable: boolean) {
     if (enable) {
       this.svgPath.setAttribute(
-          'filter', 'url(#' + this.constants.embossFilterId + ')');
+        'filter',
+        'url(#' + this.constants.embossFilterId + ')',
+      );
     } else {
       this.svgPath.setAttribute('filter', 'none');
     }
@@ -186,7 +192,9 @@ export class PathObject implements IPathObject {
     this.setClass_('blocklyDisabled', disabled);
     if (disabled) {
       this.svgPath.setAttribute(
-          'fill', 'url(#' + this.constants.disabledPatternId + ')');
+        'fill',
+        'url(#' + this.constants.disabledPatternId + ')',
+      );
     }
   }
 

@@ -7,26 +7,24 @@
 /**
  * @fileoverview Generating PHP for variable blocks.
  */
-'use strict';
 
-goog.module('Blockly.PHP.variables');
+// Former goog.module ID: Blockly.PHP.variables
 
-const {NameType} = goog.require('Blockly.Names');
-const {phpGenerator: PHP} = goog.require('Blockly.PHP');
+import {Order} from './php_generator.js';
 
 
-PHP['variables_get'] = function(block) {
+export function variables_get(block, generator) {
   // Variable getter.
   const code =
-      PHP.nameDB_.getName(block.getFieldValue('VAR'), NameType.VARIABLE);
-  return [code, PHP.ORDER_ATOMIC];
+      generator.getVariableName(block.getFieldValue('VAR'));
+  return [code, Order.ATOMIC];
 };
 
-PHP['variables_set'] = function(block) {
+export function variables_set(block, generator) {
   // Variable setter.
   const argument0 =
-      PHP.valueToCode(block, 'VALUE', PHP.ORDER_ASSIGNMENT) || '0';
+      generator.valueToCode(block, 'VALUE', Order.ASSIGNMENT) || '0';
   const varName =
-      PHP.nameDB_.getName(block.getFieldValue('VAR'), NameType.VARIABLE);
+      generator.getVariableName(block.getFieldValue('VAR'));
   return varName + ' = ' + argument0 + ';\n';
 };

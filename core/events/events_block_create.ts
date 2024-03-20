@@ -9,11 +9,9 @@
  *
  * @class
  */
-import * as goog from '../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.Events.BlockCreate');
+// Former goog.module ID: Blockly.Events.BlockCreate
 
 import type {Block} from '../block.js';
-import * as deprecation from '../utils/deprecation.js';
 import * as registry from '../registry.js';
 import * as blocks from '../serialization/blocks.js';
 import * as utilsXml from '../utils/xml.js';
@@ -23,7 +21,6 @@ import {BlockBase, BlockBaseJson} from './events_block_base.js';
 import * as eventUtils from './utils.js';
 import {Workspace} from '../workspace.js';
 
-
 /**
  * Notifies listeners when a block (or connected stack of blocks) is
  * created.
@@ -32,7 +29,7 @@ export class BlockCreate extends BlockBase {
   override type = eventUtils.BLOCK_CREATE;
 
   /** The XML representation of the created block(s). */
-  xml?: Element|DocumentFragment;
+  xml?: Element | DocumentFragment;
 
   /** The JSON respresentation of the created block(s). */
   json?: blocks.State;
@@ -45,7 +42,7 @@ export class BlockCreate extends BlockBase {
     super(opt_block);
 
     if (!opt_block) {
-      return;  // Blank event to be populated by fromJson.
+      return; // Blank event to be populated by fromJson.
     }
 
     if (opt_block.isShadow()) {
@@ -68,18 +65,21 @@ export class BlockCreate extends BlockBase {
     const json = super.toJson() as BlockCreateJson;
     if (!this.xml) {
       throw new Error(
-          'The block XML is undefined. Either pass a block to ' +
-          'the constructor, or call fromJson');
+        'The block XML is undefined. Either pass a block to ' +
+          'the constructor, or call fromJson',
+      );
     }
     if (!this.ids) {
       throw new Error(
-          'The block IDs are undefined. Either pass a block to ' +
-          'the constructor, or call fromJson');
+        'The block IDs are undefined. Either pass a block to ' +
+          'the constructor, or call fromJson',
+      );
     }
     if (!this.json) {
       throw new Error(
-          'The block JSON is undefined. Either pass a block to ' +
-          'the constructor, or call fromJson');
+        'The block JSON is undefined. Either pass a block to ' +
+          'the constructor, or call fromJson',
+      );
     }
     json['xml'] = Xml.domToText(this.xml);
     json['ids'] = this.ids;
@@ -91,24 +91,6 @@ export class BlockCreate extends BlockBase {
   }
 
   /**
-   * Decode the JSON event.
-   *
-   * @param json JSON representation.
-   */
-  override fromJson(json: BlockCreateJson) {
-    deprecation.warn(
-        'Blockly.Events.BlockCreate.prototype.fromJson', 'version 9',
-        'version 10', 'Blockly.Events.fromJson');
-    super.fromJson(json);
-    this.xml = utilsXml.textToDom(json['xml']);
-    this.ids = json['ids'];
-    this.json = json['json'] as blocks.State;
-    if (json['recordUndo'] !== undefined) {
-      this.recordUndo = json['recordUndo'];
-    }
-  }
-
-  /**
    * Deserializes the JSON event.
    *
    * @param event The event to append new properties to. Should be a subclass
@@ -117,11 +99,16 @@ export class BlockCreate extends BlockBase {
    *     parameters to static methods in superclasses.
    * @internal
    */
-  static fromJson(json: BlockCreateJson, workspace: Workspace, event?: any):
-      BlockCreate {
-    const newEvent =
-        super.fromJson(json, workspace, event ?? new BlockCreate()) as
-        BlockCreate;
+  static fromJson(
+    json: BlockCreateJson,
+    workspace: Workspace,
+    event?: any,
+  ): BlockCreate {
+    const newEvent = super.fromJson(
+      json,
+      workspace,
+      event ?? new BlockCreate(),
+    ) as BlockCreate;
     newEvent.xml = utilsXml.textToDom(json['xml']);
     newEvent.ids = json['ids'];
     newEvent.json = json['json'] as blocks.State;
@@ -140,14 +127,17 @@ export class BlockCreate extends BlockBase {
     const workspace = this.getEventWorkspace_();
     if (!this.json) {
       throw new Error(
-          'The block JSON is undefined. Either pass a block to ' +
-          'the constructor, or call fromJson');
+        'The block JSON is undefined. Either pass a block to ' +
+          'the constructor, or call fromJson',
+      );
     }
     if (!this.ids) {
       throw new Error(
-          'The block IDs are undefined. Either pass a block to ' +
-          'the constructor, or call fromJson');
+        'The block IDs are undefined. Either pass a block to ' +
+          'the constructor, or call fromJson',
+      );
     }
+    if (allShadowBlocks(workspace, this.ids)) return;
     if (forward) {
       blocks.append(this.json, workspace);
     } else {
@@ -158,12 +148,32 @@ export class BlockCreate extends BlockBase {
           block.dispose(false);
         } else if (id === this.blockId) {
           // Only complain about root-level block.
-          console.warn('Can\'t uncreate non-existent block: ' + id);
+          console.warn("Can't uncreate non-existent block: " + id);
         }
       }
     }
   }
 }
+/**
+ * Returns true if all blocks in the list are shadow blocks. If so, that means
+ * the top-level block being created is a shadow block. This only happens when a
+ * block that was covering up a shadow block is removed. We don't need to create
+ * an additional block in that case because the original block still has its
+ * shadow block.
+ *
+ * @param workspace Workspace to check for blocks
+ * @param ids A list of block ids that were created in this event
+ * @returns True if all block ids in the list are shadow blocks
+ */
+const allShadowBlocks = function (
+  workspace: Workspace,
+  ids: string[],
+): boolean {
+  const shadows = ids
+    .map((id) => workspace.getBlockById(id))
+    .filter((block) => block && block.isShadow());
+  return shadows.length === ids.length;
+};
 
 export interface BlockCreateJson extends BlockBaseJson {
   xml: string;

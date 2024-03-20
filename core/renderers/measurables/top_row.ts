@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering.TopRow');
+// Former goog.module ID: Blockly.blockRendering.TopRow
 
 import type {BlockSvg} from '../../block_svg.js';
 import type {ConstantProvider} from '../common/constants.js';
@@ -14,7 +13,6 @@ import {Hat} from './hat.js';
 import type {PreviousConnection} from './previous_connection.js';
 import {Row} from './row.js';
 import {Types} from './types.js';
-
 
 /**
  * An object containing information about what elements are in the top row of a
@@ -39,7 +37,7 @@ export class TopRow extends Row {
   hasPreviousConnection = false;
 
   /** The previous connection on the block, if any. */
-  connection: PreviousConnection|null = null;
+  connection: PreviousConnection | null = null;
 
   /**
    * @param constants The rendering constants provider.
@@ -58,12 +56,16 @@ export class TopRow extends Row {
    */
   hasLeftSquareCorner(block: BlockSvg): boolean {
     const hasHat =
-        (block.hat ? block.hat === 'cap' : this.constants_.ADD_START_HATS) &&
-        !block.outputConnection && !block.previousConnection;
+      (block.hat ? block.hat === 'cap' : this.constants_.ADD_START_HATS) &&
+      !block.outputConnection &&
+      !block.previousConnection;
     const prevBlock = block.getPreviousBlock();
 
-    return !!block.outputConnection || hasHat ||
-        (prevBlock ? prevBlock.getNextBlock() === block : false);
+    return (
+      !!block.outputConnection ||
+      hasHat ||
+      (prevBlock ? prevBlock.getNextBlock() === block : false)
+    );
   }
 
   /**

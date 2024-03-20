@@ -10,13 +10,11 @@
  *
  * @class
  */
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.DragTarget');
+// Former goog.module ID: Blockly.DragTarget
 
 import type {IDragTarget} from './interfaces/i_drag_target.js';
 import type {IDraggable} from './interfaces/i_draggable.js';
 import type {Rect} from './utils/rect.js';
-
 
 /**
  * Abstract class for a component with custom behaviour when a block or bubble
@@ -76,7 +74,7 @@ export class DragTarget implements IDragTarget {
    * @returns The component's bounding box. Null if drag target area should be
    *     ignored.
    */
-  getClientRect(): Rect|null {
+  getClientRect(): Rect | null {
     return null;
   }
 

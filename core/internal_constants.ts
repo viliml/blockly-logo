@@ -4,11 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.internalConstants');
+// Former goog.module ID: Blockly.internalConstants
 
 import {ConnectionType} from './connection_type.js';
-
 
 /**
  * Number of characters to truncate a collapsed block to.
@@ -34,9 +32,9 @@ export const OPPOSITE_TYPE: number[] = [];
 OPPOSITE_TYPE[ConnectionType.INPUT_VALUE] = ConnectionType.OUTPUT_VALUE;
 OPPOSITE_TYPE[ConnectionType.OUTPUT_VALUE] = ConnectionType.INPUT_VALUE;
 OPPOSITE_TYPE[ConnectionType.NEXT_STATEMENT] =
-    ConnectionType.PREVIOUS_STATEMENT;
+  ConnectionType.PREVIOUS_STATEMENT;
 OPPOSITE_TYPE[ConnectionType.PREVIOUS_STATEMENT] =
-    ConnectionType.NEXT_STATEMENT;
+  ConnectionType.NEXT_STATEMENT;
 
 /**
  * String for use in the dropdown created in field_variable.

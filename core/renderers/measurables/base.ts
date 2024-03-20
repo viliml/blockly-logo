@@ -4,13 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering.Measurable');
+// Former goog.module ID: Blockly.blockRendering.Measurable
 
 import type {ConstantProvider} from '../common/constants.js';
 
 import {Types} from './types.js';
-
 
 /**
  * The base class to represent a part of a block that takes up space during

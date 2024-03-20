@@ -13,9 +13,9 @@ const asyncDone = require('async-done');
 const gulp = require('gulp');
 const gzip = require('gulp-gzip');
 const fs = require('fs');
-const path = require('path').posix;
+const path = require('path');
 const {execSync} = require('child_process');
-const rimraf = require('rimraf');
+const {rimraf} = require('rimraf');
 
 const {RELEASE_DIR, TEST_TSC_OUTPUT_DIR} = require('./config');
 
@@ -153,7 +153,7 @@ function build() {
  * @return {Promise} Asynchronous result.
  */
 function renamings() {
-  return runTestCommand('renamings', 'node tests/migration/validate-renamings.js');
+  return runTestCommand('renamings', 'tests/migration/validate-renamings.mjs');
 }
 
 /**

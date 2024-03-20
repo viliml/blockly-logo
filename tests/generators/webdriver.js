@@ -9,7 +9,7 @@
  */
 var webdriverio = require('webdriverio');
 var fs = require('fs');
-var path = require('path').posix;
+var path = require('path');
 
 
 /**
@@ -47,7 +47,6 @@ async function runGeneratorsInBrowser(outputDir) {
       },
     },
     logLevel: 'warn',
-    services: ['selenium-standalone']
   };
 
   // Run in headless mode on Github Actions.
@@ -72,6 +71,10 @@ async function runGeneratorsInBrowser(outputDir) {
 
   console.log('Loading url: ' + url);
   await browser.url(url);
+
+  await browser
+    .$('.blocklySvg .blocklyWorkspace > .blocklyBlockCanvas')
+    .waitForExist({timeout: 2000});
 
   await browser.execute(function() {
     checkAll();

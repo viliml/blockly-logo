@@ -10,12 +10,10 @@
  *
  * @class
  */
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.WorkspaceAudio');
+// Former goog.module ID: Blockly.WorkspaceAudio
 
 import * as userAgent from './utils/useragent.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
-
 
 /**
  * Prevent a sound from playing if another sound preceded it within this many
@@ -31,7 +29,7 @@ export class WorkspaceAudio {
   private sounds = new Map<string, HTMLAudioElement>();
 
   /** Time that the last sound was played. */
-  private lastSound_: Date|null = null;
+  private lastSound_: Date | null = null;
 
   /**
    * @param parentWorkspace The parent of the workspace this audio object
@@ -98,10 +96,10 @@ export class WorkspaceAudio {
         // pause() we will get an exception: (DOMException: The play() request
         // was interrupted) See more:
         // https://developers.google.com/web/updates/2017/06/play-request-was-interrupted
-        playPromise.then(sound.pause)
-            .catch(
-                // Play without user interaction was prevented.
-                function() {});
+        playPromise.then(sound.pause).catch(
+          // Play without user interaction was prevented.
+          function () {},
+        );
       } else {
         sound.pause();
       }
@@ -127,8 +125,10 @@ export class WorkspaceAudio {
     if (sound) {
       // Don't play one sound on top of another.
       const now = new Date();
-      if (this.lastSound_ !== null &&
-          now.getTime() - this.lastSound_.getTime() < SOUND_LIMIT) {
+      if (
+        this.lastSound_ !== null &&
+        now.getTime() - this.lastSound_.getTime() < SOUND_LIMIT
+      ) {
         return;
       }
       this.lastSound_ = now;

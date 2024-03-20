@@ -9,13 +9,11 @@
  *
  * @class
  */
-import * as goog from '../closure/goog/goog.js';
-goog.declareModuleId('Blockly.MarkerManager');
+// Former goog.module ID: Blockly.MarkerManager
 
 import type {Cursor} from './keyboard_nav/cursor.js';
 import type {Marker} from './keyboard_nav/marker.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
-
 
 /**
  * Class to manage the multiple markers and the cursor on a workspace.
@@ -25,16 +23,16 @@ export class MarkerManager {
   static readonly LOCAL_MARKER = 'local_marker_1';
 
   /** The cursor. */
-  private cursor_: Cursor|null = null;
+  private cursor_: Cursor | null = null;
 
   /** The cursor's SVG element. */
-  private cursorSvg_: SVGElement|null = null;
+  private cursorSvg_: SVGElement | null = null;
 
   /** The map of markers for the workspace. */
   private markers = new Map<string, Marker>();
 
   /** The marker's SVG element. */
-  private markerSvg_: SVGElement|null = null;
+  private markerSvg_: SVGElement | null = null;
 
   /**
    * @param workspace The workspace for the marker manager.
@@ -53,7 +51,8 @@ export class MarkerManager {
       this.unregisterMarker(id);
     }
     marker.setDrawer(
-        this.workspace.getRenderer().makeMarkerDrawer(this.workspace, marker));
+      this.workspace.getRenderer().makeMarkerDrawer(this.workspace, marker),
+    );
     this.setMarkerSvg(marker.getDrawer().createDom());
     this.markers.set(id, marker);
   }
@@ -70,8 +69,11 @@ export class MarkerManager {
       this.markers.delete(id);
     } else {
       throw Error(
-          'Marker with ID ' + id + ' does not exist. ' +
-          'Can only unregister markers that exist.');
+        'Marker with ID ' +
+          id +
+          ' does not exist. ' +
+          'Can only unregister markers that exist.',
+      );
     }
   }
 
@@ -80,7 +82,7 @@ export class MarkerManager {
    *
    * @returns The cursor for this workspace.
    */
-  getCursor(): Cursor|null {
+  getCursor(): Cursor | null {
     return this.cursor_;
   }
 
@@ -91,7 +93,7 @@ export class MarkerManager {
    * @returns The marker that corresponds to the given ID, or null if none
    *     exists.
    */
-  getMarker(id: string): Marker|null {
+  getMarker(id: string): Marker | null {
     return this.markers.get(id) || null;
   }
 
@@ -107,8 +109,9 @@ export class MarkerManager {
     }
     this.cursor_ = cursor;
     if (this.cursor_) {
-      const drawer = this.workspace.getRenderer().makeMarkerDrawer(
-          this.workspace, this.cursor_);
+      const drawer = this.workspace
+        .getRenderer()
+        .makeMarkerDrawer(this.workspace, this.cursor_);
       this.cursor_.setDrawer(drawer);
       this.setCursorSvg(this.cursor_.getDrawer().createDom());
     }
@@ -121,7 +124,7 @@ export class MarkerManager {
    *     SVG group.
    * @internal
    */
-  setCursorSvg(cursorSvg: SVGElement|null) {
+  setCursorSvg(cursorSvg: SVGElement | null) {
     if (!cursorSvg) {
       this.cursorSvg_ = null;
       return;
@@ -138,7 +141,7 @@ export class MarkerManager {
    *     SVG group.
    * @internal
    */
-  setMarkerSvg(markerSvg: SVGElement|null) {
+  setMarkerSvg(markerSvg: SVGElement | null) {
     if (!markerSvg) {
       this.markerSvg_ = null;
       return;
@@ -146,8 +149,9 @@ export class MarkerManager {
 
     if (this.workspace.getBlockCanvas()) {
       if (this.cursorSvg_) {
-        this.workspace.getBlockCanvas()!.insertBefore(
-            markerSvg, this.cursorSvg_);
+        this.workspace
+          .getBlockCanvas()!
+          .insertBefore(markerSvg, this.cursorSvg_);
       } else {
         this.workspace.getBlockCanvas()!.appendChild(markerSvg);
       }
@@ -169,12 +173,11 @@ export class MarkerManager {
    * Dispose of the marker manager.
    * Go through and delete all markers associated with this marker manager.
    *
-   * @suppress {checkTypes}
    * @internal
    */
   dispose() {
     const markerIds = Object.keys(this.markers);
-    for (let i = 0, markerId; markerId = markerIds[i]; i++) {
+    for (let i = 0, markerId; (markerId = markerIds[i]); i++) {
       this.unregisterMarker(markerId);
     }
     this.markers.clear();

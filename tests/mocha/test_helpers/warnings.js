@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-goog.declareModuleId('Blockly.test.helpers.warnings');
-
-
 /**
  * Captures the strings sent to console.warn() when calling a function.
  * Copies from core.
@@ -17,7 +14,7 @@ export function captureWarnings(innerFunc) {
   const msgs = [];
   const nativeConsoleWarn = console.warn;
   try {
-    console.warn = function(msg) {
+    console.warn = function (msg) {
       msgs.push(msg);
     };
     innerFunc();

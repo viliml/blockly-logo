@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as goog from '../../../closure/goog/goog.js';
-goog.declareModuleId('Blockly.blockRendering.InputRow');
+// Former goog.module ID: Blockly.blockRendering.InputRow
 
 import type {ConstantProvider} from '../common/constants.js';
 
@@ -14,7 +13,6 @@ import {InputConnection} from './input_connection.js';
 import {Row} from './row.js';
 import {StatementInput} from './statement_input.js';
 import {Types} from './types.js';
-
 
 /**
  * An object containing information about a row that holds one or more inputs.
@@ -47,10 +45,12 @@ export class InputRow extends Row {
         if (Types.isStatementInput(elem) && elem instanceof StatementInput) {
           connectedBlockWidths += elem.connectedBlockWidth;
         } else if (
-            Types.isExternalInput(elem) && elem instanceof ExternalValueInput &&
-            elem.connectedBlockWidth !== 0) {
+          Types.isExternalInput(elem) &&
+          elem instanceof ExternalValueInput &&
+          elem.connectedBlockWidth !== 0
+        ) {
           connectedBlockWidths +=
-              elem.connectedBlockWidth - elem.connectionWidth;
+            elem.connectedBlockWidth - elem.connectionWidth;
         }
       }
       if (!Types.isSpacer(elem)) {
