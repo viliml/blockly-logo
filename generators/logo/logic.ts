@@ -5,10 +5,15 @@
 
 // Former goog.module ID: Blockly.Logo.logic
 
+import type {Block} from '../../core/block.js';
+import type {LogoGenerator} from './logo_generator.js';
 import {Order} from './logo_generator.js';
 
 
-export function controls_ifelse(block, generator) {
+export function controls_ifelse(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // If/else condition.
   let code = '', conditionCode, ifCode, elseCode;
   if (generator.STATEMENT_PREFIX) {
@@ -35,7 +40,10 @@ export function controls_ifelse(block, generator) {
   return code;
 }
 
-export function logic_compare(block, generator) {
+export function logic_compare(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Comparison operator.
   const OPERATORS = {
     'EQ': '==',
@@ -45,14 +53,18 @@ export function logic_compare(block, generator) {
     'GT': '>',
     'GTE': '>='
   };
-  const operator = OPERATORS[block.getFieldValue('OP')];
+  type OperatorOption = keyof typeof OPERATORS;
+  const operator = OPERATORS[block.getFieldValue('OP') as OperatorOption];
   const argument0 = generator.valueToCode(block, 'A', Order.COMPARISON) || '0';
   const argument1 = generator.valueToCode(block, 'B', Order.COMPARISON) || '0';
   const code = argument0 + ' ' + operator + ' ' + argument1;
   return [code, Order.COMPARISON];
-};
+}
 
-export function logic_operation(block, generator) {
+export function logic_operation(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Operations 'and', 'or'.
   const operator = (block.getFieldValue('OP') === 'AND') ? 'and' : 'or';
   let argument0 = generator.valueToCode(block, 'A', Order.NONE);
@@ -67,28 +79,40 @@ export function logic_operation(block, generator) {
   }
   const code = operator + ' ' + argument0 + ' ' + argument1;
   return [code, Order.PROCEDURE];
-};
+}
 
-export function logic_negate(block, generator) {
+export function logic_negate(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Negation.
   const argument0 = generator.valueToCode(block, 'BOOL', Order.NONE) ||
       'true';
   const code = '!' + argument0;
   return [code, Order.PROCEDURE];
-};
+}
 
-export function logic_boolean(block, generator) {
+export function logic_boolean(
+  block: Block,
+  _generator: LogoGenerator,
+): [string, Order] {
   // Boolean values true and false.
   const code = (block.getFieldValue('BOOL') === 'TRUE') ? '"true' : '"false';
   return [code, Order.ATOMIC];
-};
+}
 
-export function logic_null(block, generator) {
+export function logic_null(
+  _block: Block,
+  _generator: LogoGenerator,
+): [string, Order] {
   // Null data type.
   return ['[]', Order.ATOMIC];
-};
+}
 
-export function logic_ternary(block, generator) {
+export function logic_ternary(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Ternary operator.
   const value_if = generator.valueToCode(block, 'IF',
       Order.NONE) || '"false';
@@ -98,4 +122,4 @@ export function logic_ternary(block, generator) {
       Order.NONE) || '[]';
   const code = 'ifelse ' + value_if + ' [' + value_then + '] [' + value_else + ']';
   return [code, Order.PROCEDURE];
-};
+}

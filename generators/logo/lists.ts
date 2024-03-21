@@ -5,26 +5,38 @@
 
 // Former goog.module ID: Blockly.Logo.lists
 
+import type {Block} from '../../core/block.js';
+import type {CreateWithBlock} from "../../blocks/lists";
+import type {LogoGenerator} from './logo_generator.js';
 import {Order} from './logo_generator.js';
 
-
-export function lists_create_empty(block, generator) {
+export function lists_create_empty(
+  _block: Block,
+  _generator: LogoGenerator,
+): [string, Order] {
   // Create an empty list.
   return ['[]', Order.ATOMIC];
-};
+}
 
-export function lists_create_with(block, generator) {
+export function lists_create_with(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Create a list with any number of elements of any type.
-  const elements = new Array(block.itemCount_);
-  for (let i = 0; i < block.itemCount_; i++) {
+  const createWithBlock = block as CreateWithBlock;
+  const elements = new Array(createWithBlock.itemCount_);
+  for (let i = 0; i < createWithBlock.itemCount_; i++) {
     elements[i] = generator.valueToCode(block, 'ADD' + i,
         Order.NONE) || 'null';
   }
   const code = '(list ' + elements.join(' ') + ')';
   return [code, Order.ATOMIC];
-};
+}
 
-export function lists_repeat(block, generator) {
+export function lists_repeat(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Create a list with one element repeated.
   const functionName = generator.provideFunction_(
       'listsRepeat',
@@ -38,23 +50,32 @@ export function lists_repeat(block, generator) {
       Order.NONE) || '0';
   const code = functionName + ' ' + element + ' ' + repeatCount;
   return [code, Order.PROCEDURE];
-};
+}
 
-export function lists_length(block, generator) {
+export function lists_length(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // String or array length.
   const list = generator.valueToCode(block, 'VALUE',
       Order.NONE) || '[]';
   return ['count ' + list, Order.PROCEDURE];
-};
+}
 
-export function lists_isEmpty(block, generator) {
+export function lists_isEmpty(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Is the string null or array empty?
   const list = generator.valueToCode(block, 'VALUE',
       Order.NONE) || '[]';
   return ['emptyp ' + list, Order.PROCEDURE];
-};
+}
 
-export function lists_indexOf(block, generator) {
+export function lists_indexOf(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Find an item in the list.
   const rev = block.getFieldValue('END') === 'FIRST' ?
       '"true' : '"false';
@@ -79,9 +100,12 @@ export function lists_indexOf(block, generator) {
     return [code, Order.PROCEDURE];
   }
   return ['-1 + ' + code, Order.PROCEDURE];
-};
+}
 
-export function lists_getIndex(block, generator) {
+export function lists_getIndex(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Get element at index.
   // Note: Until January 2013 this block did not have MODE or WHERE inputs.
   const mode = block.getFieldValue('MODE') || 'GET';
@@ -118,9 +142,12 @@ export function lists_getIndex(block, generator) {
       break;
   }
   throw Error('Unhandled combination (lists_getIndex).');
-};
+}
 
-export function lists_sort(block, generator) {
+export function lists_sort(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
 // Block for sorting a list.
   const list = generator.valueToCode(block, 'LIST',
       Order.NONE) || '[]';
@@ -156,9 +183,12 @@ export function lists_sort(block, generator) {
         '  op :res',
         'end']);
   return [functionName + ' ' + list, Order.PROCEDURE];
-};
+}
 
-// export function lists_split(block, generator) {
+// export function lists_split(
+//   block: Block,
+//   generator: LogoGenerator,
+// ) {
   // // Block for splitting text into a list, or joining a list into text.
   // var input = generator.valueToCode(block, 'INPUT',
       // Order.MEMBER);
@@ -182,10 +212,13 @@ export function lists_sort(block, generator) {
   // return [code, Order.FUNCTION_CALL];
 // };
 
-export function lists_reverse(block, generator) {
+export function lists_reverse(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Block for reversing a list.
   const list = generator.valueToCode(block, 'LIST',
       Order.NONE) || '[]';
   const code = 'reverse ' + list;
   return [code, Order.PROCEDURE];
-};
+}

@@ -5,10 +5,15 @@
 
 // Former goog.module ID: Blockly.Logo.loops
 
+import type {Block} from '../../core/block.js';
+import type {LogoGenerator} from './logo_generator.js';
 import {Order} from './logo_generator.js';
 
 
-export function controls_repeat_ext(block, generator) {
+export function controls_repeat_ext(
+  block: Block,
+  generator: LogoGenerator,
+) {
   let repeats;
 // Repeat n times.
   if (block.getField('TIMES')) {
@@ -25,11 +30,14 @@ export function controls_repeat_ext(block, generator) {
   code += 'repeat ' + repeats + ' [\n' +
       branch + ']\n';
   return code;
-};
+}
 
 export const controls_repeat = controls_repeat_ext;
 
-export function controls_whileUntil(block, generator) {
+export function controls_whileUntil(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // Do while/until loop.
   const until = block.getFieldValue('MODE') === 'UNTIL';
   const argument0 = generator.valueToCode(block, 'BOOL',
@@ -37,9 +45,12 @@ export function controls_whileUntil(block, generator) {
   let branch = generator.statementToCode(block, 'DO');
   branch = generator.addLoopTrap(branch, block);
   return (until ? 'until ' : 'while [') + argument0 + '] [\n' + branch + ']\n';
-};
+}
 
-export function controls_for(block, generator) {
+export function controls_for(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // For loop.
   const variable0 = generator.getVariableName(block.getFieldValue('VAR'));
   const argument0 = generator.valueToCode(block, 'FROM',
@@ -54,9 +65,12 @@ export function controls_for(block, generator) {
       argument1 + '] [' + increment + ']] [\n' +
       branch + ']\n';
   return code;
-};
+}
 
-export function controls_forEach(block, generator) {
+export function controls_forEach(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // For each loop.
   const variable0 = generator.getVariableName(block.getFieldValue('VAR'));
   const argument0 = generator.valueToCode(block, 'LIST',
@@ -66,9 +80,12 @@ export function controls_forEach(block, generator) {
   branch = generator.INDENT + 'make "' + variable0 + ' ?\n' + branch;
   const code = 'foreach ' + argument0 + ' [\n' + branch + ']\n';
   return code;
-};
+}
 /*
-export function controls_flow_statements(block, generator) {
+export function controls_flow_statements(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // Flow statements: continue, break.
   var xfix = '';
   if (generator.STATEMENT_PREFIX) {

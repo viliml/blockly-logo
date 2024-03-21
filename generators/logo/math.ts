@@ -5,20 +5,27 @@
 
 // Former goog.module ID: Blockly.Logo.math
 
+import type {Block} from '../../core/block.js';
+import type {LogoGenerator} from './logo_generator.js';
 import {Order} from './logo_generator.js';
 
 
-export function math_number(block, generator) {
+export function math_number(
+  block: Block,
+  _generator: LogoGenerator,
+): [string, Order] {
   // Numeric value.
-  const code = Number(block.getFieldValue('NUM'));
-  const order = code >= 0 ? Order.ATOMIC :
-      Order.UNARY_NEGATION;
-  return [code, order];
-};
+  const number = Number(block.getFieldValue('NUM'));
+  const order = number >= 0 ? Order.ATOMIC : Order.UNARY_NEGATION;
+  return [String(number), order];
+}
 
-export function math_arithmetic(block, generator) {
+export function math_arithmetic(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Basic arithmetic operators, and power.
-  const OPERATORS = {
+  const OPERATORS: Record<string, [string | null, Order]> = {
     'ADD': [' + ', Order.ADDITION],
     'MINUS': [' - ', Order.SUBTRACTION],
     'MULTIPLY': [' * ', Order.MULTIPLICATION],
@@ -38,9 +45,12 @@ export function math_arithmetic(block, generator) {
   }
   code = argument0 + operator + argument1;
   return [code, order];
-};
+}
 
-export function math_single(block, generator) {
+export function math_single(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Math operators with single operand.
   const operator = block.getFieldValue('OP');
   let code;
@@ -57,11 +67,11 @@ export function math_single(block, generator) {
     return [code, Order.UNARY_NEGATION];
   }
   if (operator === 'ROUNDUP') {
-    arg = Blockly.JavaScript.valueToCode(block, 'NUM',
-        Blockly.JavaScript.ORDER_ADDITION) || '0';
+    arg = generator.valueToCode(block, 'NUM',
+        Order.ADDITION) || '0';
   } else {
-    arg = Blockly.JavaScript.valueToCode(block, 'NUM',
-        Blockly.JavaScript.ORDER_NONE) || '0';
+    arg = generator.valueToCode(block, 'NUM',
+        Order.NONE) || '0';
   }
   // First, handle cases which generate values that don't need parentheses
   // wrapping the code.
@@ -115,11 +125,14 @@ export function math_single(block, generator) {
       throw Error('Unknown math operator: ' + operator);
   }
   return [code, Order.PROCEDURE];
-};
+}
 
-export function math_constant(block, generator) {
+export function math_constant(
+  block: Block,
+  _generator: LogoGenerator,
+): [string, Order] {
   // Constants: PI, E, the Golden Ratio, sqrt(2), 1/sqrt(2), INFINITY.
-  const CONSTANTS = {
+  const CONSTANTS: Record<string, [string, Order]> = {
     'PI': ['pi', Order.ATOMIC],
     'E': ['exp 1', Order.PROCEDURE],
     'GOLDEN_RATIO':
@@ -128,14 +141,17 @@ export function math_constant(block, generator) {
     'SQRT1_2': ['sqrt 1/2', Order.PROCEDURE]
   };
   return CONSTANTS[block.getFieldValue('CONSTANT')];
-};
+}
 
-export function math_number_property(block, generator) {
+export function math_number_property(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Check if a number is even, odd, prime, whole, positive, or negative
-  let number_to_check;
 // or if it is divisible by certain number. Returns true or false.
   const dropdown_property = block.getFieldValue('PROPERTY');
-  let code;
+  let number_to_check;
+  let code = '';
   if (dropdown_property === 'PRIME') {
     throw Error('Primality testing isn\'t supported yet');
     number_to_check = generator.valueToCode(block, 'NUMBER_TO_CHECK',
@@ -194,16 +210,19 @@ export function math_number_property(block, generator) {
       break;
   }
   return [code, order];
-};
+}
 
-export function math_change(block, generator) {
+export function math_change(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // Add to a variable in place.
   const argument0 = generator.valueToCode(block, 'DELTA',
       Order.ADDITION) || '0';
   const varName = generator.getVariableName(block.getFieldValue('VAR'));
   return 'make "' + varName + ' (ifelse numberp :' + varName + ' :' + varName +
       ' 0) + ' + argument0 + '\n';
-};
+}
 
 
 // Rounding functions have a single operand.
@@ -212,7 +231,10 @@ export const math_round = math_single;
 export const math_trig = math_single;
 
 /*
-export function math_on_list(block, generator) {
+export function math_on_list(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // Math functions for lists.
   var func = block.getFieldValue('OP');
   var list, code;
@@ -342,7 +364,10 @@ export function math_on_list(block, generator) {
   return [code, Order.FUNCTION_CALL];
 };
 */
-export function math_modulo(block, generator) {
+export function math_modulo(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Remainder computation.
   const argument0 = generator.valueToCode(block, 'DIVIDEND',
       Order.NONE) || '0';
@@ -350,9 +375,12 @@ export function math_modulo(block, generator) {
       Order.NONE) || '0';
   const code = 'modulo ' + argument0 + ' ' + argument1;
   return [code, Order.PROCEDURE];
-};
+}
 /*
-export function math_constrain(block, generator) {
+export function math_constrain(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Constrain a number between two limits.
   var argument0 = generator.valueToCode(block, 'VALUE',
       Order.COMMA) || '0';
@@ -365,7 +393,10 @@ export function math_constrain(block, generator) {
   return [code, Order.FUNCTION_CALL];
 };
 */
-export function math_random_int(block, generator) {
+export function math_random_int(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Random integer between [X] and [Y].
   const argument0 = generator.valueToCode(block, 'FROM',
       Order.SUBTRACTION) || '0';
@@ -373,14 +404,20 @@ export function math_random_int(block, generator) {
       Order.SUBTRACTION) || '0';
   const code = argument0 + ' + random ' + argument1 + ' - ' + argument0 + " + 1";
   return [code, Order.PROCEDURE];
-};
+}
 /*
-export function math_random_float(block, generator) {
+export function math_random_float(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Random fraction between 0 and 1.
   return ['Math.random()', Order.FUNCTION_CALL];
 };
 */
-export function math_atan2(block, generator) {
+export function math_atan2(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Arctangent of point (X, Y) in degrees from -180 to 180.
   const argument0 = generator.valueToCode(block, 'X',
       Order.NONE) || '0';
@@ -388,4 +425,4 @@ export function math_atan2(block, generator) {
       Order.NONE) || '0';
   return ['(arctan ' + argument0 + ' ' + argument1 + ')',
       Order.ATOMIC];
-};
+}

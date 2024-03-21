@@ -13,10 +13,10 @@
 
 // import * as Variables from '../../core/variables.js';
 import * as stringUtils from '../../core/utils/string.js';
-// import type {Block} from '../../core/block.js';
+import type {Block} from '../../core/block.js';
 import {CodeGenerator} from '../../core/generator.js';
-import {Names, NameType} from '../../core/names.js';
-// import type {Workspace} from '../../core/workspace.js';
+import {Names} from '../../core/names.js';
+import type {Workspace} from '../../core/workspace.js';
 import {inputTypes} from '../../core/inputs/input_types.js';
 
 /**
@@ -24,17 +24,17 @@ import {inputTypes} from '../../core/inputs/input_types.js';
  * @enum {number}
  */
 
-export const Order = {
-  ATOMIC: 0,				// ()
-  UNARY_NEGATION: 1,		// -
-  MULTIPLICATION: 2.1,	// *
-  DIVISION: 2.2,			// /
-  SUBTRACTION: 3.1,		// -
-  ADDITION: 3.2,			// +
-  COMPARISON: 4,			//: < > <= >= <>
-  PROCEDURE: 5,			// pr "|Hello World|
-  NONE: 99,              // (...)
-};
+export enum Order {
+  ATOMIC= 0,				// ()
+  UNARY_NEGATION = 1,		// -
+  MULTIPLICATION = 2.1,	// *
+  DIVISION = 2.2,			// /
+  SUBTRACTION = 3.1,		// -
+  ADDITION = 3.2,			// +
+  COMPARISON = 4,			// == < > <= >= <>
+  PROCEDURE = 5,			// pr "|Hello World|
+  NONE = 99,              // (...)
+}
 
 export class LogoGenerator extends CodeGenerator {
 
@@ -42,7 +42,7 @@ export class LogoGenerator extends CodeGenerator {
    * List of outer-inner pairings that do NOT require parentheses.
    * @type {!Array.<!Array.<number>>}
    */
-  ORDER_OVERRIDES = [
+  ORDER_OVERRIDES: [Order, Order][] = [
     // a * (b * c) -> a * b * c
     [Order.MULTIPLICATION, Order.MULTIPLICATION],
     // a + (b + c) -> a + b + c
@@ -52,8 +52,8 @@ export class LogoGenerator extends CodeGenerator {
     //[Order.PROCEDURE, Order.PROCEDURE]
   ];
 
-  constructor(name) {
-    super(name ?? 'Logo');
+  constructor(name = 'Logo') {
+    super(name);
     this.isInitialized = false;
 
     // Copy Order values onto instance for backwards compatibility
@@ -64,15 +64,24 @@ export class LogoGenerator extends CodeGenerator {
     // replace data properties with get accessors that call
     // deprecate.warn().)
     for (const key in Order) {
-      this['ORDER_' + key] = Order[key];
+      // Must assign Order[key] to a temporary to get the type guard to work;
+      // see https://github.com/microsoft/TypeScript/issues/10530.
+      const value = Order[key];
+      // Skip reverse-lookup entries in the enum.  Due to
+      // https://github.com/microsoft/TypeScript/issues/55713 this (as
+      // of TypeScript 5.5.2) actually narrows the type of value to
+      // never - but that still allows the following assignment to
+      // succeed.
+      if (typeof value === 'string') continue;
+      (this as unknown as Record<string, Order>)['ORDER_' + key] = value;
     }
   }
 
   /**
    * Initialise the database of variable names.
-   * @param {!Workspace} workspace Workspace to generate code from.
+   * @param workspace Workspace to generate code from.
    */
-  init(workspace) {
+  init(workspace: Workspace) {
     super.init(workspace);
 
     if (!this.nameDB_) {
@@ -93,34 +102,34 @@ export class LogoGenerator extends CodeGenerator {
    * @param {string} code Generated code.
    * @return {string} Completed code.
    */
-  finish(code) {
+  finish(code: string) {
     // Convert the definitions dictionary into a list.
     const definitions = Object.values(this.definitions_);
     // Call Blockly.CodeGenerator's finish.
     super.finish(code);
     this.isInitialized = false;
 
-    this.nameDB_.reset();
+    this.nameDB_!.reset();
     return definitions.join('\n\n') + '\n\n\n' + code;
   };
 
   /**
    * Naked values are top-level blocks with outputs that aren't plugged into
    * anything.  An ignore function is needed to make this legal.
-   * @param {string} line Line of generated code.
-   * @return {string} Legal line of code.
+   * @param line Line of generated code.
+   * @return Legal line of code.
    */
-  scrubNakedValue(line) {
+  scrubNakedValue(line: string): string {
     return 'ignore ' + line + '\n';
   }
 
   /**
    * Encode a string as a properly escaped JavaScript string, complete with
    * quotes.
-   * @param {string} string Text to encode.
-   * @return {string} JavaScript string.
+   * @param string Text to encode.
+   * @return JavaScript string.
    */
-  quote_(string) {
+  quote_(string: string): string {
     string = string.replace(/\\/g, '\\\\')
     .replace(/\n/g, '\\\n')
     .replace(/;/g, '\\;')
@@ -133,10 +142,10 @@ export class LogoGenerator extends CodeGenerator {
   /**
    * Encode a string as a properly escaped multiline JavaScript string, complete
    * with quotes.
-   * @param {string} string Text to encode.
-   * @return {string} JavaScript string.
+   * @param string Text to encode.
+   * @return JavaScript string.
    */
-  multiline_quote_(string) {
+  multiline_quote_(string: string): string {
     const lines = string.split(/\n/g).map(this.quote_);
     return lines.join('\\\n');
   }
@@ -145,14 +154,14 @@ export class LogoGenerator extends CodeGenerator {
    * Common tasks for generating JavaScript from blocks.
    * Handles comments for the specified block and any connected value blocks.
    * Calls any statements following this block.
-   * @param {!Block} block The current block.
-   * @param {string} code The JavaScript code created for this block.
-   * @param {boolean=} opt_thisOnly True to generate code for only this
+   * @param block The current block.
+   * @param code The JavaScript code created for this block.
+   * @param opt_thisOnly True to generate code for only this
    *     statement.
-   * @return {string} JavaScript code with comments and subsequent blocks added.
+   * @return Logo code with comments and subsequent blocks added.
    * @protected
    */
-  scrub_(block, code, opt_thisOnly) {
+  scrub_(block: Block, code: string, opt_thisOnly = false): string {
     let commentCode = '';
     // Only collect comments for blocks that aren't inline.
     if (!block.outputConnection || !block.outputConnection.targetConnection) {
@@ -166,7 +175,7 @@ export class LogoGenerator extends CodeGenerator {
       // Don't collect comments for nested statements.
       for (let i = 0; i < block.inputList.length; i++) {
         if (block.inputList[i].type === inputTypes.VALUE) {
-          const childBlock = block.inputList[i].connection.targetBlock();
+          const childBlock = block.inputList[i].connection!.targetBlock();
           if (childBlock) {
             comment = this.allNestedComments(childBlock);
             if (comment) {
@@ -183,62 +192,63 @@ export class LogoGenerator extends CodeGenerator {
   }
 
   /**
-   * Gets a property and adjusts the value while taking into account indexing.
-   * @param {!Block} block The block.
-   * @param {string} atId The property ID of the element to get.
-   * @param {number=} opt_delta Value to add.
-   * @param {boolean=} opt_negate Whether to negate the value.
-   * @param {number=} opt_order The highest order acting on this value.
-   * @return {string|number}
+   * Generate code representing the specified value input, adjusted to take into
+   * account indexing (zero- or one-based) and optionally by a specified delta
+   * and/or by negation.
+   *
+   * @param block The block.
+   * @param atId The ID of the input block to get (and adjust) the value of.
+   * @param delta Value to add.
+   * @param negate Whether to negate the value.
+   * @param order The highest order acting on this value.
+   * @returns The adjusted value or code that evaluates to it.
    */
-  getAdjusted(block, atId, opt_delta, opt_negate, opt_order) {
-    let delta = opt_delta || 0;
-    let order = opt_order || this.ORDER_NONE;
+  getAdjusted(
+      block: Block,
+      atId: string,
+      delta = 0,
+      negate = false,
+      order = Order.NONE,
+  ) {
     if (!block.workspace.options.oneBasedIndex) {
       delta++;
     }
     const defaultAtIndex = block.workspace.options.oneBasedIndex ? '1' : '0';
 
-    let innerOrder;
-    let outerOrder = order;
+    let orderForInput = order;
     if (delta > 0) {
-      outerOrder = this.ORDER_ADDITION;
-      innerOrder = this.ORDER_ADDITION;
+      orderForInput = Order.ADDITION;
     } else if (delta < 0) {
-      outerOrder = this.ORDER_SUBTRACTION;
-      innerOrder = this.ORDER_SUBTRACTION;
-    } else if (opt_negate) {
-      outerOrder = this.ORDER_UNARY_NEGATION;
-      innerOrder = this.ORDER_UNARY_NEGATION;
+      orderForInput = Order.SUBTRACTION;
+    } else if (negate) {
+      orderForInput = Order.UNARY_NEGATION;
     }
 
-    let at = this.valueToCode(block, atId, outerOrder) || defaultAtIndex;
+    let at = this.valueToCode(block, atId, orderForInput) || defaultAtIndex;
 
+    // Easy case: no adjustments.
+    if (delta === 0 && !negate) {
+      return at;
+    }
+    // If the index is a naked number, adjust it right now.
     if (stringUtils.isNumber(at)) {
-      // If the index is a naked number, adjust it right now.
-      at = Number(at) + delta;
-      if (opt_negate) {
-        at = -at;
+      at = String(Number(at) + delta);
+      if (negate) {
+        at = String(-Number(at));
       }
-    } else {
-      // If the index is dynamic, adjust it in code.
-      if (delta > 0) {
-        at = at + ' + ' + delta;
-      } else if (delta < 0) {
-        at = at + ' - ' + -delta;
-      }
-      if (opt_negate) {
-        if (delta) {
-          at = '-(' + at + ')';
-        } else {
-          at = '-' + at;
-        }
-      }
-      innerOrder = Math.floor(innerOrder);
-      order = Math.floor(order);
-      if (innerOrder && order >= innerOrder) {
-        at = '(' + at + ')';
-      }
+      return at;
+    }
+    // If the index is dynamic, adjust it in code.
+    if (delta > 0) {
+      at = `${at} + ${delta}`;
+    } else if (delta < 0) {
+      at = `${at} - ${-delta}`;
+    }
+    if (negate) {
+      at = delta ? `-(${at})` : `-${at}`;
+    }
+    if (Math.floor(order) >= Math.floor(orderForInput)) {
+      at = `(${at})`;
     }
     return at;
   }

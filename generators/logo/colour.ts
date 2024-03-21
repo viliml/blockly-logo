@@ -5,10 +5,15 @@
 
 // Former goog.module ID: Blockly.Logo.colour
 
+import type {Block} from '../../core/block.js';
+import type {LogoGenerator} from './logo_generator.js';
 import {Order} from './logo_generator.js';
 
 
-export function colour_picker(block, generator) {
+export function colour_picker(
+  block: Block,
+  _generator: LogoGenerator,
+): [string, Order] {
   // Colour picker.
   const c = block.getFieldValue('COLOUR');
   const r = parseInt(c.substring(1, 3), 16);
@@ -16,15 +21,21 @@ export function colour_picker(block, generator) {
   const b = parseInt(c.substring(5, 7), 16);
   const code = '[' + r + ' ' + g + ' ' + b + ']';
   return [code, Order.ATOMIC];
-};
+}
 
-export function colour_random(block, generator) {
+export function colour_random(
+  _block: Block,
+  _generator: LogoGenerator,
+): [string, Order] {
   // Generate a random colour.
   const code = "(list random 256 random 256 random 256)";
   return [code, Order.ATOMIC];
-};
+}
 
-export function colour_rgb(block, generator) {
+export function colour_rgb(
+  block: Block,
+  generator: LogoGenerator,
+): [string, Order] {
   // Compose a colour from RGB components expressed as percentages.
   const red = generator.valueToCode(block, 'RED',
       Order.MULTIPLICATION) || 0;
@@ -34,9 +45,12 @@ export function colour_rgb(block, generator) {
       Order.MULTIPLICATION) || 0;
   const code = '(list 2.55 * ' + red + ' 2.55 * ' + green + ' 2.55 * ' + blue + ')';
   return [code, Order.ATOMIC];
-};
+}
 /*
-export function colour_blend(block, generator) {
+export function colour_blend(
+  block: Block,
+  generator: LogoGenerator,
+) {
   // Blend two colours together.
   var c1 = generator.valueToCode(block, 'COLOUR1',
       Order.COMMA) || '\'#000000\'';
