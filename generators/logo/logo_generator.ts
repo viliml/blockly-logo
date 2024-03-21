@@ -25,7 +25,7 @@ import {inputTypes} from '../../core/inputs/input_types.js';
  */
 
 export enum Order {
-  ATOMIC= 0,				// ()
+  ATOMIC = 0,				// ()
   UNARY_NEGATION = 1,		// -
   MULTIPLICATION = 2.1,	// *
   DIVISION = 2.2,			// /
