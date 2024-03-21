@@ -34,8 +34,8 @@ import {Input} from './inputs/input.js';
 import {Align} from './inputs/align.js';
 import type {IASTNodeLocation} from './interfaces/i_ast_node_location.js';
 import type {IDeletable} from './interfaces/i_deletable.js';
-import type {IIcon} from './interfaces/i_icon.js';
-import {CommentIcon} from './icons/comment_icon.js';
+import {type IIcon} from './interfaces/i_icon.js';
+import {isCommentIcon} from './interfaces/i_comment_icon.js';
 import type {MutatorIcon} from './icons/mutator_icon.js';
 import * as Tooltip from './tooltip.js';
 import * as arrayUtils from './utils/array.js';
@@ -189,7 +189,14 @@ export class Block implements IASTNodeLocation, IDeletable {
   /**
    * Is the current block currently in the process of being disposed?
    */
-  private disposing = false;
+  protected disposing = false;
+
+  /**
+   * Has this block been fully initialized? E.g. all fields initailized.
+   *
+   * @internal
+   */
+  initialized = false;
 
   private readonly xy_: Coordinate;
   isInFlyout: boolean;
@@ -202,7 +209,8 @@ export class Block implements IASTNodeLocation, IDeletable {
   /** Name of the type of hat. */
   hat?: string;
 
-  rendered: boolean | null = null;
+  /** Is this block a BlockSVG? */
+  readonly rendered: boolean = false;
 
   /**
    * String for block help, or function that returns a URL. Null for no help.
@@ -311,7 +319,7 @@ export class Block implements IASTNodeLocation, IDeletable {
    *     children of this block.
    */
   dispose(healStack: boolean) {
-    if (this.isDeadOrDying()) return;
+    this.disposing = true;
 
     // Dispose of this change listener before unplugging.
     // Technically not necessary due to the event firing delay.
@@ -334,15 +342,13 @@ export class Block implements IASTNodeLocation, IDeletable {
    * E.g. does not fire events, unplug the block, etc.
    */
   protected disposeInternal() {
-    if (this.isDeadOrDying()) return;
-
+    this.disposing = true;
     if (this.onchangeWrapper_) {
       this.workspace.removeChangeListener(this.onchangeWrapper_);
     }
 
     this.workspace.removeTypedBlock(this);
     this.workspace.removeBlockById(this.id);
-    this.disposing = true;
 
     if (typeof this.destroy === 'function') this.destroy();
 
@@ -372,13 +378,11 @@ export class Block implements IASTNodeLocation, IDeletable {
    * change).
    */
   initModel() {
+    if (this.initialized) return;
     for (const input of this.inputList) {
-      for (const field of input.fieldRow) {
-        if (field.initModel) {
-          field.initModel();
-        }
-      }
+      input.initModel();
     }
+    this.initialized = true;
   }
 
   /**
@@ -559,7 +563,6 @@ export class Block implements IASTNodeLocation, IDeletable {
    * connected should not coincidentally line up on screen.
    */
   bumpNeighbours() {}
-  // noop.
 
   /**
    * Return the parent block or null if this block is at the top level. The
@@ -1526,8 +1529,7 @@ export class Block implements IASTNodeLocation, IDeletable {
         checks = connection.targetConnection.getCheck();
       }
       return (
-        !!checks &&
-        (checks.indexOf('Boolean') !== -1 || checks.indexOf('Number') !== -1)
+        !!checks && (checks.includes('Boolean') || checks.includes('Number'))
       );
     }
 
@@ -2209,7 +2211,7 @@ export class Block implements IASTNodeLocation, IDeletable {
    * @returns Block's comment.
    */
   getCommentText(): string | null {
-    const comment = this.getIcon(CommentIcon.TYPE) as CommentIcon | null;
+    const comment = this.getIcon(IconType.COMMENT);
     return comment?.getText() ?? null;
   }
 
@@ -2219,19 +2221,36 @@ export class Block implements IASTNodeLocation, IDeletable {
    * @param text The text, or null to delete.
    */
   setCommentText(text: string | null) {
-    const comment = this.getIcon(CommentIcon.TYPE) as CommentIcon | null;
+    const comment = this.getIcon(IconType.COMMENT);
     const oldText = comment?.getText() ?? null;
     if (oldText === text) return;
     if (text !== null) {
-      let comment = this.getIcon(CommentIcon.TYPE) as CommentIcon | undefined;
+      let comment = this.getIcon(IconType.COMMENT);
       if (!comment) {
-        comment = this.addIcon(new CommentIcon(this));
+        const commentConstructor = registry.getClass(
+          registry.Type.ICON,
+          IconType.COMMENT.toString(),
+          false,
+        );
+        if (!commentConstructor) {
+          throw new Error(
+            'No comment icon class is registered, so a comment cannot be set',
+          );
+        }
+        const icon = new commentConstructor(this);
+        if (!isCommentIcon(icon)) {
+          throw new Error(
+            'The class registered as a comment icon does not conform to the ' +
+              'ICommentIcon interface',
+          );
+        }
+        comment = this.addIcon(icon);
       }
       eventUtils.disable();
       comment.setText(text);
       eventUtils.enable();
     } else {
-      this.removeIcon(CommentIcon.TYPE);
+      this.removeIcon(IconType.COMMENT);
     }
 
     eventUtils.fire(

@@ -14,7 +14,7 @@ import * as Xml from '../core/xml.js';
 import * as fieldRegistry from '../core/field_registry.js';
 import * as xmlUtils from '../core/utils/xml.js';
 import type {Abstract as AbstractEvent} from '../core/events/events_abstract.js';
-import {Align} from '../core/inputs/input.js';
+import {Align} from '../core/inputs/align.js';
 import type {Block} from '../core/block.js';
 import type {BlockSvg} from '../core/block_svg.js';
 import type {BlockCreate} from '../core/events/events_block_create.js';
@@ -858,7 +858,7 @@ const PROCEDURE_CALL_COMMON = {
         if (
           mutatorOpen &&
           connection &&
-          paramIds.indexOf(this.quarkIds_[i]) === -1
+          !paramIds.includes(this.quarkIds_[i])
         ) {
           // This connection should no longer be attached to this block.
           connection.disconnect();
@@ -921,10 +921,9 @@ const PROCEDURE_CALL_COMMON = {
           type: 'field_label',
           text: this.arguments_[i],
         }) as FieldLabel;
-        const input = this.appendValueInput('ARG' + i)
+        this.appendValueInput('ARG' + i)
           .setAlign(Align.RIGHT)
           .appendField(newField, 'ARGNAME' + i);
-        input.init();
       }
     }
     // Remove deleted inputs.
@@ -937,7 +936,6 @@ const PROCEDURE_CALL_COMMON = {
       if (this.arguments_.length) {
         if (!this.getField('WITH')) {
           topRow.appendField(Msg['PROCEDURES_CALL_BEFORE_PARAMS'], 'WITH');
-          topRow.init();
         }
       } else {
         if (this.getField('WITH')) {
@@ -1043,7 +1041,7 @@ const PROCEDURE_CALL_COMMON = {
     }
     if (
       event.type === Events.BLOCK_CREATE &&
-      (event as BlockCreate).ids!.indexOf(this.id) !== -1
+      (event as BlockCreate).ids!.includes(this.id)
     ) {
       // Look for the case where a procedure call was created (usually through
       // paste) and there is no matching definition.  In this case, create
@@ -1288,7 +1286,7 @@ const PROCEDURES_IFRETURN = {
     // Is the block nested in a procedure?
     let block = this; // eslint-disable-line @typescript-eslint/no-this-alias
     do {
-      if (this.FUNCTION_TYPES.indexOf(block.type) !== -1) {
+      if (this.FUNCTION_TYPES.includes(block.type)) {
         legal = true;
         break;
       }

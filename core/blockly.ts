@@ -22,7 +22,6 @@ import {BlockSvg} from './block_svg.js';
 import {BlocklyOptions} from './blockly_options.js';
 import {Blocks} from './blocks.js';
 import * as browserEvents from './browser_events.js';
-import {Bubble} from './bubbles/bubble.js';
 import * as bubbles from './bubbles.js';
 import {BubbleDragger} from './bubble_dragger.js';
 import * as bumpObjects from './bump_objects.js';
@@ -37,6 +36,7 @@ import {ConnectionType} from './connection_type.js';
 import * as ContextMenu from './contextmenu.js';
 import * as ContextMenuItems from './contextmenu_items.js';
 import {ContextMenuRegistry} from './contextmenu_registry.js';
+import * as comments from './comments.js';
 import * as Css from './css.js';
 import {DeleteArea} from './delete_area.js';
 import * as dialog from './dialog.js';
@@ -51,23 +51,11 @@ import {
   UnattachedFieldError,
 } from './field.js';
 import {
-  FieldAngle,
-  FieldAngleConfig,
-  FieldAngleFromJsonConfig,
-  FieldAngleValidator,
-} from './field_angle.js';
-import {
   FieldCheckbox,
   FieldCheckboxConfig,
   FieldCheckboxFromJsonConfig,
   FieldCheckboxValidator,
 } from './field_checkbox.js';
-import {
-  FieldColour,
-  FieldColourConfig,
-  FieldColourFromJsonConfig,
-  FieldColourValidator,
-} from './field_colour.js';
 import {
   FieldDropdown,
   FieldDropdownConfig,
@@ -88,12 +76,6 @@ import {
   FieldLabelFromJsonConfig,
 } from './field_label.js';
 import {FieldLabelSerializable} from './field_label_serializable.js';
-import {
-  FieldMultilineInput,
-  FieldMultilineInputConfig,
-  FieldMultilineInputFromJsonConfig,
-  FieldMultilineInputValidator,
-} from './field_multilineinput.js';
 import {
   FieldNumber,
   FieldNumberConfig,
@@ -123,12 +105,10 @@ import {Gesture} from './gesture.js';
 import {Grid} from './grid.js';
 import * as icons from './icons.js';
 import {inject} from './inject.js';
-import {Align} from './inputs/align.js';
 import {Input} from './inputs/input.js';
-import {inputTypes} from './inputs/input_types.js';
 import * as inputs from './inputs.js';
 import {InsertionMarkerManager} from './insertion_marker_manager.js';
-import {InsertionMarkerPreviewer} from './connection_previewers/insertion_marker_previewer.js';
+import {InsertionMarkerPreviewer} from './insertion_marker_previewer.js';
 import {IASTNodeLocation} from './interfaces/i_ast_node_location.js';
 import {IASTNodeLocationSvg} from './interfaces/i_ast_node_location_svg.js';
 import {IASTNodeLocationWithBlock} from './interfaces/i_ast_node_location_with_block.js';
@@ -188,7 +168,6 @@ import * as renderManagement from './render_management.js';
 import * as blockRendering from './renderers/common/block_rendering.js';
 import * as constants from './constants.js';
 import * as geras from './renderers/geras/geras.js';
-import * as minimalist from './renderers/minimalist/minimalist.js';
 import * as thrasos from './renderers/thrasos/thrasos.js';
 import * as zelos from './renderers/zelos/zelos.js';
 import {Scrollbar} from './scrollbar.js';
@@ -244,27 +223,6 @@ export const VERSION = 'uncompiled';
  */
 
 /*
- * Aliases for input alignments used in block defintions.
- */
-
-/**
- * @see Blockly.Input.Align.LEFT
- * @deprecated Use `Blockly.inputs.Align.LEFT`. To be removed in v11.
- */
-export const ALIGN_LEFT = Align.LEFT;
-
-/**
- * @see Blockly.Input.Align.CENTRE
- * @deprecated Use `Blockly.inputs.Align.CENTER`. To be removed in v11.
- */
-export const ALIGN_CENTRE = Align.CENTRE;
-
-/**
- * @see Blockly.Input.Align.RIGHT
- * @deprecated Use `Blockly.inputs.Align.RIGHT`. To be removed in v11.
- */
-export const ALIGN_RIGHT = Align.RIGHT;
-/*
  * Aliases for constants used for connection and input types.
  */
 
@@ -287,12 +245,6 @@ export const NEXT_STATEMENT = ConnectionType.NEXT_STATEMENT;
  * @see ConnectionType.PREVIOUS_STATEMENT
  */
 export const PREVIOUS_STATEMENT = ConnectionType.PREVIOUS_STATEMENT;
-
-/**
- * @see inputTypes.DUMMY_INPUT
- * @deprecated Use `Blockly.inputs.inputTypes.DUMMY`. To be removed in v11.
- */
-export const DUMMY_INPUT = inputTypes.DUMMY;
 
 /** Aliases for toolbox positions. */
 
@@ -490,7 +442,6 @@ export {constants};
 export {dialog};
 export {fieldRegistry};
 export {geras};
-export {minimalist};
 export {registry};
 export {thrasos};
 export {uiPosition};
@@ -504,8 +455,6 @@ export {BlockDragger};
 export {BlockSvg};
 export {Blocks};
 export {bubbles};
-/** @deprecated Use Blockly.bubbles.Bubble instead. To be removed in v11. */
-export {Bubble};
 export {BubbleDragger};
 export {CollapsibleToolboxCategory};
 export {ComponentManager};
@@ -514,28 +463,17 @@ export {ConnectionType};
 export {ConnectionChecker};
 export {ConnectionDB};
 export {ContextMenuRegistry};
+export {comments};
 export {Cursor};
 export {DeleteArea};
 export {DragTarget};
 export const DropDownDiv = dropDownDiv;
 export {Field, FieldConfig, FieldValidator, UnattachedFieldError};
 export {
-  FieldAngle,
-  FieldAngleConfig,
-  FieldAngleFromJsonConfig,
-  FieldAngleValidator,
-};
-export {
   FieldCheckbox,
   FieldCheckboxConfig,
   FieldCheckboxFromJsonConfig,
   FieldCheckboxValidator,
-};
-export {
-  FieldColour,
-  FieldColourConfig,
-  FieldColourFromJsonConfig,
-  FieldColourValidator,
 };
 export {
   FieldDropdown,
@@ -549,12 +487,6 @@ export {
 export {FieldImage, FieldImageConfig, FieldImageFromJsonConfig};
 export {FieldLabel, FieldLabelConfig, FieldLabelFromJsonConfig};
 export {FieldLabelSerializable};
-export {
-  FieldMultilineInput,
-  FieldMultilineInputConfig,
-  FieldMultilineInputFromJsonConfig,
-  FieldMultilineInputValidator,
-};
 export {
   FieldNumber,
   FieldNumberConfig,
@@ -652,9 +584,5 @@ export {WorkspaceDragger};
 export {WorkspaceSvg};
 export {ZoomControls};
 export {config};
-/** @deprecated Use Blockly.ConnectionType instead. */
-export const connectionTypes = ConnectionType;
 export {inject};
-/** @deprecated Use Blockly.inputs.inputTypes instead. To be removed in v11. */
-export {inputTypes};
 export {serialization};

@@ -19,6 +19,7 @@ import {
   createMockEvent,
 } from './test_helpers/events.js';
 import {MockIcon, MockBubbleIcon} from './test_helpers/icon_mocks.js';
+import {IconType} from '../../build/src/core/icons/icon_types.js';
 
 suite('Blocks', function () {
   setup(function () {
@@ -67,9 +68,9 @@ suite('Blocks', function () {
 
   function createTestBlocks(workspace, isRow) {
     const blockType = isRow ? 'row_block' : 'stack_block';
-    const blockA = workspace.newBlock(blockType);
-    const blockB = workspace.newBlock(blockType);
-    const blockC = workspace.newBlock(blockType);
+    const blockA = workspace.newBlock(blockType, 'a');
+    const blockB = workspace.newBlock(blockType, 'b');
+    const blockC = workspace.newBlock(blockType, 'c');
 
     if (isRow) {
       blockA.inputList[0].connection.connect(blockB.outputConnection);
@@ -386,8 +387,14 @@ suite('Blocks', function () {
 
         test('Child is shadow', function () {
           const blocks = this.blocks;
-          blocks.C.setShadow(true);
+          blocks.C.dispose();
+          blocks.B.inputList[0].connection.setShadowState({
+            'type': 'row_block',
+            'id': 'c',
+          });
+
           blocks.B.dispose(true);
+
           // Even though we're asking to heal, it will appear as if it has not
           // healed because shadows always get destroyed.
           assertDisposedNoheal(blocks);
@@ -423,8 +430,14 @@ suite('Blocks', function () {
 
         test('Child is shadow', function () {
           const blocks = this.blocks;
-          blocks.C.setShadow(true);
+          blocks.C.dispose();
+          blocks.B.nextConnection.setShadowState({
+            'type': 'stack_block',
+            'id': 'c',
+          });
+
           blocks.B.dispose(true);
+
           // Even though we're asking to heal, it will appear as if it has not
           // healed because shadows always get destroyed.
           assertDisposedNoheal(blocks);
@@ -1353,6 +1366,93 @@ suite('Blocks', function () {
           chai.assert.equal(this.block.getCommentText(), 'test2');
           assertCommentEvent(this.eventsFireSpy, 'test1', 'test2');
         });
+      });
+    });
+
+    suite('Constructing registered comment classes', function () {
+      class MockComment extends MockIcon {
+        getType() {
+          return Blockly.icons.IconType.COMMENT;
+        }
+
+        setText() {}
+
+        getText() {
+          return '';
+        }
+
+        setBubbleSize() {}
+
+        getBubbleSize() {
+          return Blockly.utils.Size(0, 0);
+        }
+
+        bubbleIsVisible() {
+          return true;
+        }
+
+        setBubbleVisible() {}
+      }
+
+      setup(function () {
+        this.workspace = Blockly.inject('blocklyDiv', {});
+
+        this.block = this.workspace.newBlock('stack_block');
+        this.block.initSvg();
+        this.block.render();
+      });
+
+      teardown(function () {
+        workspaceTeardown.call(this, this.workspace);
+
+        Blockly.icons.registry.unregister(
+          Blockly.icons.IconType.COMMENT.toString(),
+        );
+        Blockly.icons.registry.register(
+          Blockly.icons.IconType.COMMENT,
+          Blockly.icons.CommentIcon,
+        );
+      });
+
+      test('setCommentText constructs the registered comment icon', function () {
+        Blockly.icons.registry.unregister(
+          Blockly.icons.IconType.COMMENT.toString(),
+        );
+        Blockly.icons.registry.register(
+          Blockly.icons.IconType.COMMENT,
+          MockComment,
+        );
+
+        this.block.setCommentText('test text');
+
+        chai.assert.instanceOf(
+          this.block.getIcon(Blockly.icons.IconType.COMMENT),
+          MockComment,
+        );
+      });
+
+      test('setCommentText throws if no icon is registered', function () {
+        Blockly.icons.registry.unregister(
+          Blockly.icons.IconType.COMMENT.toString(),
+        );
+
+        chai.assert.throws(() => {
+          this.block.setCommentText('test text');
+        }, 'No comment icon class is registered, so a comment cannot be set');
+      });
+
+      test('setCommentText throws if the icon is not an ICommentIcon', function () {
+        Blockly.icons.registry.unregister(
+          Blockly.icons.IconType.COMMENT.toString(),
+        );
+        Blockly.icons.registry.register(
+          Blockly.icons.IconType.COMMENT,
+          MockIcon,
+        );
+
+        chai.assert.throws(() => {
+          this.block.setCommentText('test text');
+        }, 'The class registered as a comment icon does not conform to the ICommentIcon interface');
       });
     });
   });

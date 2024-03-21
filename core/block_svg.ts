@@ -17,7 +17,6 @@ import './events/events_selected.js';
 import {Block} from './block.js';
 import * as blockAnimations from './block_animations.js';
 import * as browserEvents from './browser_events.js';
-import {CommentIcon} from './icons/comment_icon.js';
 import * as common from './common.js';
 import {config} from './config.js';
 import type {Connection} from './connection.js';
@@ -59,7 +58,6 @@ import {WarningIcon} from './icons/warning_icon.js';
 import type {Workspace} from './workspace.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
 import * as renderManagement from './render_management.js';
-import * as deprecation from './utils/deprecation.js';
 import {IconType} from './icons/icon_types.js';
 import {BlockCopyData, BlockPaster} from './clipboard/block_paster.js';
 
@@ -115,18 +113,14 @@ export class BlockSvg
   /** Block's mutator icon (if any). */
   mutator: MutatorIcon | null = null;
 
-  /**
-   * Block's warning icon (if any).
-   *
-   * @deprecated Use `setWarningText` to modify warnings on this block.
-   */
-  warning: WarningIcon | null = null;
-
   private svgGroup_: SVGGElement;
   style: BlockStyle;
   /** @internal */
   pathObject: IPathObject;
-  override rendered = false;
+
+  /** Is this block a BlockSVG? */
+  override readonly rendered = true;
+
   private visuallyDisabled = false;
 
   /**
@@ -147,12 +141,6 @@ export class BlockSvg
   override previousConnection!: RenderedConnection;
 
   private translation = '';
-
-  /**
-   * The ID of the setTimeout callback for bumping neighbours, or 0 if no bump
-   * is currently scheduled.
-   */
-  private bumpNeighboursPid = 0;
 
   /** Whether this block is currently being dragged. */
   private dragging = false;
@@ -175,6 +163,9 @@ export class BlockSvg
    */
   constructor(workspace: WorkspaceSvg, prototypeName: string, opt_id?: string) {
     super(workspace, prototypeName, opt_id);
+    if (!workspace.rendered) {
+      throw TypeError('Cannot create a rendered block in a headless workspace');
+    }
     this.workspace = workspace;
     this.svgGroup_ = dom.createSvgElement(Svg.G, {});
 
@@ -201,10 +192,8 @@ export class BlockSvg
    * May be called more than once.
    */
   initSvg() {
-    if (!this.workspace.rendered) {
-      throw TypeError('Workspace is headless.');
-    }
-    for (let i = 0, input; (input = this.inputList[i]); i++) {
+    if (this.initialized) return;
+    for (const input of this.inputList) {
       input.init();
     }
     for (const icon of this.getIcons()) {
@@ -214,7 +203,7 @@ export class BlockSvg
     this.applyColour();
     this.pathObject.updateMovable(this.isMovable());
     const svg = this.getSvgRoot();
-    if (!this.workspace.options.readOnly && !this.eventsInit_ && svg) {
+    if (!this.workspace.options.readOnly && svg) {
       browserEvents.conditionalBind(
         svg,
         'pointerdown',
@@ -222,11 +211,11 @@ export class BlockSvg
         this.onMouseDown_,
       );
     }
-    this.eventsInit_ = true;
 
     if (!svg.parentNode) {
       this.workspace.getCanvas().appendChild(svg);
     }
+    this.initialized = true;
   }
 
   /**
@@ -455,23 +444,12 @@ export class BlockSvg
 
   /** Snap this block to the nearest grid point. */
   snapToGrid() {
-    if (this.isDeadOrDying()) {
-      return; // Deleted block.
-    }
-    if (this.workspace.isDragging()) {
-      return; // Don't bump blocks during a drag.
-    }
-
-    if (this.getParent()) {
-      return; // Only snap top-level blocks.
-    }
-    if (this.isInFlyout) {
-      return; // Don't move blocks around in a flyout.
-    }
+    if (this.isDeadOrDying()) return;
+    if (this.getParent()) return;
+    if (this.isInFlyout) return;
     const grid = this.workspace.getGrid();
-    if (!grid || !grid.shouldSnap()) {
-      return; // Config says no snapping.
-    }
+    if (!grid || !grid.shouldSnap()) return;
+
     const spacing = grid.getSpacing();
     const half = spacing / 2;
     const xy = this.getRelativeToSurfaceXY();
@@ -670,12 +648,6 @@ export class BlockSvg
    * @internal
    */
   updateComponentLocations(blockOrigin: Coordinate) {
-    if (!this.rendered) {
-      // Rendering is required to lay out the blocks.
-      // This is probably an invisible block attached to a collapsed block.
-      return;
-    }
-
     if (!this.dragging) this.updateConnectionLocations(blockOrigin);
     this.updateIconLocations(blockOrigin);
     this.updateFieldLocations(blockOrigin);
@@ -804,12 +776,12 @@ export class BlockSvg
    * @param animate If true, show a disposal animation and sound.
    */
   override dispose(healStack?: boolean, animate?: boolean) {
-    if (this.isDeadOrDying()) return;
+    this.disposing = true;
 
     Tooltip.dispose();
     ContextMenu.hide();
 
-    if (animate && this.rendered) {
+    if (animate) {
       this.unplug(healStack);
       blockAnimations.disposeUiEffect(this);
     }
@@ -823,10 +795,8 @@ export class BlockSvg
    * E.g. does trigger UI effects, remove nodes, etc.
    */
   override disposeInternal() {
-    if (this.isDeadOrDying()) return;
+    this.disposing = true;
     super.disposeInternal();
-
-    this.rendered = false;
 
     if (common.getSelected() === this) {
       this.unselect();
@@ -923,18 +893,6 @@ export class BlockSvg
   }
 
   /**
-   * Get the comment icon attached to this block, or null if the block has no
-   * comment.
-   *
-   * @returns The comment icon attached to this block, or null.
-   * @deprecated Use getIcon. To be remove in v11.
-   */
-  getCommentIcon(): CommentIcon | null {
-    deprecation.warn('getCommentIcon', 'v10', 'v11', 'getIcon');
-    return (this.getIcon(CommentIcon.TYPE) ?? null) as CommentIcon | null;
-  }
-
-  /**
    * Set this block's warning text.
    *
    * @param text The text, or null to delete.
@@ -1021,17 +979,12 @@ export class BlockSvg
   override addIcon<T extends IIcon>(icon: T): T {
     super.addIcon(icon);
 
-    if (icon instanceof WarningIcon) this.warning = icon;
     if (icon instanceof MutatorIcon) this.mutator = icon;
 
-    if (this.rendered) {
-      icon.initView(this.createIconPointerDownListener(icon));
-      icon.applyColour();
-      icon.updateEditable();
-      this.queueRender();
-      renderManagement.triggerQueuedRenders();
-      this.bumpNeighbours();
-    }
+    icon.initView(this.createIconPointerDownListener(icon));
+    icon.applyColour();
+    icon.updateEditable();
+    this.queueRender();
 
     return icon;
   }
@@ -1053,14 +1006,10 @@ export class BlockSvg
   override removeIcon(type: IconType<IIcon>): boolean {
     const removed = super.removeIcon(type);
 
-    if (type.equals(WarningIcon.TYPE)) this.warning = null;
     if (type.equals(MutatorIcon.TYPE)) this.mutator = null;
 
-    if (this.rendered) {
-      this.queueRender();
-      renderManagement.triggerQueuedRenders();
-      this.bumpNeighbours();
-    }
+    this.queueRender();
+
     return removed;
   }
 
@@ -1072,7 +1021,7 @@ export class BlockSvg
   override setEnabled(enabled: boolean) {
     if (this.isEnabled() !== enabled) {
       super.setEnabled(enabled);
-      if (this.rendered && !this.getInheritedDisabled()) {
+      if (!this.getInheritedDisabled()) {
         this.updateDisabled();
       }
     }
@@ -1085,9 +1034,6 @@ export class BlockSvg
    * @param highlighted True if highlighted.
    */
   setHighlighted(highlighted: boolean) {
-    if (!this.rendered) {
-      return;
-    }
     this.pathObject.updateHighlighted(highlighted);
   }
 
@@ -1219,11 +1165,7 @@ export class BlockSvg
     opt_check?: string | string[] | null,
   ) {
     super.setPreviousStatement(newBoolean, opt_check);
-
-    if (this.rendered) {
-      this.queueRender();
-      this.bumpNeighbours();
-    }
+    this.queueRender();
   }
 
   /**
@@ -1238,11 +1180,7 @@ export class BlockSvg
     opt_check?: string | string[] | null,
   ) {
     super.setNextStatement(newBoolean, opt_check);
-
-    if (this.rendered) {
-      this.queueRender();
-      this.bumpNeighbours();
-    }
+    this.queueRender();
   }
 
   /**
@@ -1257,11 +1195,7 @@ export class BlockSvg
     opt_check?: string | string[] | null,
   ) {
     super.setOutput(newBoolean, opt_check);
-
-    if (this.rendered) {
-      this.queueRender();
-      this.bumpNeighbours();
-    }
+    this.queueRender();
   }
 
   /**
@@ -1271,11 +1205,7 @@ export class BlockSvg
    */
   override setInputsInline(newBoolean: boolean) {
     super.setInputsInline(newBoolean);
-
-    if (this.rendered) {
-      this.queueRender();
-      this.bumpNeighbours();
-    }
+    this.queueRender();
   }
 
   /**
@@ -1289,13 +1219,7 @@ export class BlockSvg
    */
   override removeInput(name: string, opt_quiet?: boolean): boolean {
     const removed = super.removeInput(name, opt_quiet);
-
-    if (this.rendered) {
-      this.queueRender();
-      // Removing an input will cause the block to change shape.
-      this.bumpNeighbours();
-    }
-
+    this.queueRender();
     return removed;
   }
 
@@ -1307,23 +1231,13 @@ export class BlockSvg
    */
   override moveNumberedInputBefore(inputIndex: number, refIndex: number) {
     super.moveNumberedInputBefore(inputIndex, refIndex);
-
-    if (this.rendered) {
-      this.queueRender();
-      // Moving an input will cause the block to change shape.
-      this.bumpNeighbours();
-    }
+    this.queueRender();
   }
 
   /** @override */
   override appendInput(input: Input): Input {
     super.appendInput(input);
-
-    if (this.rendered) {
-      this.queueRender();
-      // Adding an input will cause the block to change shape.
-      this.bumpNeighbours();
-    }
+    this.queueRender();
     return input;
   }
 
@@ -1377,28 +1291,25 @@ export class BlockSvg
    * Returns connections originating from this block.
    *
    * @param all If true, return all connections even hidden ones.
-   *     Otherwise, for a non-rendered block return an empty list, and for a
-   *     collapsed block don't return inputs connections.
+   *     Otherwise, for a collapsed block don't return inputs connections.
    * @returns Array of connections.
    * @internal
    */
   override getConnections_(all: boolean): RenderedConnection[] {
     const myConnections = [];
-    if (all || this.rendered) {
-      if (this.outputConnection) {
-        myConnections.push(this.outputConnection);
-      }
-      if (this.previousConnection) {
-        myConnections.push(this.previousConnection);
-      }
-      if (this.nextConnection) {
-        myConnections.push(this.nextConnection);
-      }
-      if (all || !this.collapsed_) {
-        for (let i = 0, input; (input = this.inputList[i]); i++) {
-          if (input.connection) {
-            myConnections.push(input.connection as RenderedConnection);
-          }
+    if (this.outputConnection) {
+      myConnections.push(this.outputConnection);
+    }
+    if (this.previousConnection) {
+      myConnections.push(this.previousConnection);
+    }
+    if (this.nextConnection) {
+      myConnections.push(this.nextConnection);
+    }
+    if (all || !this.collapsed_) {
+      for (let i = 0, input; (input = this.inputList[i]); i++) {
+        if (input.connection) {
+          myConnections.push(input.connection as RenderedConnection);
         }
       }
     }
@@ -1474,22 +1385,6 @@ export class BlockSvg
    * up on screen, because that creates confusion for end-users.
    */
   override bumpNeighbours() {
-    if (this.bumpNeighboursPid) return;
-    const group = eventUtils.getGroup();
-
-    this.bumpNeighboursPid = setTimeout(() => {
-      const oldGroup = eventUtils.getGroup();
-      eventUtils.setGroup(group);
-      this.getRootBlock().bumpNeighboursInternal();
-      eventUtils.setGroup(oldGroup);
-      this.bumpNeighboursPid = 0;
-    }, config.bumpDelay);
-  }
-
-  /**
-   * Bumps unconnected blocks out of alignment.
-   */
-  private bumpNeighboursInternal() {
     const root = this.getRootBlock();
     if (
       this.isDeadOrDying() ||
@@ -1506,16 +1401,13 @@ export class BlockSvg
     for (const conn of this.getConnections_(false)) {
       if (conn.isSuperior()) {
         // Recurse down the block stack.
-        conn.targetBlock()?.bumpNeighboursInternal();
+        conn.targetBlock()?.bumpNeighbours();
       }
 
       for (const neighbour of conn.neighbours(config.snapRadius)) {
-        // Don't bump away from things that are in our stack.
         if (neighbourIsInStack(neighbour)) continue;
-        // If both connections are connected, that's fine.
         if (conn.isConnected() && neighbour.isConnected()) continue;
 
-        // Always bump the inferior connection.
         if (conn.isSuperior()) {
           neighbour.bumpAwayFrom(conn);
         } else {
@@ -1526,21 +1418,11 @@ export class BlockSvg
   }
 
   /**
-   * Schedule snapping to grid and bumping neighbours to occur after a brief
-   * delay.
-   *
-   * @internal
+   * Snap to grid, and then bump neighbouring blocks away at the end of the next
+   * render.
    */
   scheduleSnapAndBump() {
-    // Ensure that any snap and bump are part of this move's event group.
-    const group = eventUtils.getGroup();
-
-    setTimeout(() => {
-      eventUtils.setGroup(group);
-      this.snapToGrid();
-      eventUtils.setGroup(false);
-    }, config.bumpDelay / 2);
-
+    this.snapToGrid();
     this.bumpNeighbours();
   }
 
@@ -1617,7 +1499,6 @@ export class BlockSvg
    * @internal
    */
   renderEfficiently() {
-    this.rendered = true;
     dom.startTextWidthCache();
 
     if (this.isCollapsed()) {

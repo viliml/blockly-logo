@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {BlockSvg} from '../block_svg.js';
-import {IConnectionPreviewer} from '../interfaces/i_connection_previewer.js';
-import {RenderedConnection} from '../rendered_connection.js';
-import {WorkspaceSvg} from '../workspace_svg.js';
-import * as eventUtils from '../events/utils.js';
-import * as constants from '../constants.js';
-import * as renderManagement from '../render_management.js';
-import * as registry from '../registry.js';
-import {Renderer as ZelosRenderer} from '../renderers/zelos/renderer.js';
-import {ConnectionType} from '../connection_type.js';
+import {BlockSvg} from './block_svg.js';
+import {IConnectionPreviewer} from './interfaces/i_connection_previewer.js';
+import {RenderedConnection} from './rendered_connection.js';
+import {WorkspaceSvg} from './workspace_svg.js';
+import * as blocks from './serialization/blocks.js';
+import * as eventUtils from './events/utils.js';
+import * as renderManagement from './render_management.js';
+import * as registry from './registry.js';
+import {Renderer as ZelosRenderer} from './renderers/zelos/renderer.js';
+import {ConnectionType} from './connection_type.js';
 
 /**
  * An error message to throw if the block created by createMarkerBlock_ is
@@ -21,8 +21,8 @@ import {ConnectionType} from '../connection_type.js';
  */
 const DUPLICATE_BLOCK_ERROR =
   'The insertion marker previewer tried to create a marker but the result ' +
-  'is missing %1. If you are using a mutator, make sure your domToMutation ' +
-  'method is properly defined.';
+  'is missing a connection. If you are using a mutator, make sure your ' +
+  'domToMutation method is properly defined.';
 
 export class InsertionMarkerPreviewer implements IConnectionPreviewer {
   private readonly workspace: WorkspaceSvg;
@@ -88,6 +88,16 @@ export class InsertionMarkerPreviewer implements IConnectionPreviewer {
     eventUtils.disable();
     try {
       this.hidePreview();
+      const dragged = draggedConn.getSourceBlock();
+      const marker = this.createInsertionMarker(dragged);
+      const markerConn = this.getMatchingConnection(
+        dragged,
+        marker,
+        draggedConn,
+      );
+      if (!markerConn) {
+        throw Error(DUPLICATE_BLOCK_ERROR);
+      }
 
       // TODO(7898): Instead of special casing, we should change the dragger to
       //   track the change in distance between the dragged connection and the
@@ -156,47 +166,26 @@ export class InsertionMarkerPreviewer implements IConnectionPreviewer {
   }
 
   private createInsertionMarker(origBlock: BlockSvg) {
-    const result = this.workspace.newBlock(origBlock.type);
-    result.setInsertionMarker(true);
-    if (origBlock.saveExtraState) {
-      const state = origBlock.saveExtraState(true);
-      if (state && result.loadExtraState) {
-        result.loadExtraState(state);
-      }
-    } else if (origBlock.mutationToDom) {
-      const oldMutationDom = origBlock.mutationToDom();
-      if (oldMutationDom && result.domToMutation) {
-        result.domToMutation(oldMutationDom);
-      }
-    }
-    // Copy field values from the other block.  These values may impact the
-    // rendered size of the insertion marker.  Note that we do not care about
-    // child blocks here.
-    for (let i = 0; i < origBlock.inputList.length; i++) {
-      const sourceInput = origBlock.inputList[i];
-      if (sourceInput.name === constants.COLLAPSED_INPUT_NAME) {
-        continue; // Ignore the collapsed input.
-      }
-      const resultInput = result.inputList[i];
-      if (!resultInput) {
-        throw new Error(DUPLICATE_BLOCK_ERROR.replace('%1', 'an input'));
-      }
-      for (let j = 0; j < sourceInput.fieldRow.length; j++) {
-        const sourceField = sourceInput.fieldRow[j];
-        const resultField = resultInput.fieldRow[j];
-        if (!resultField) {
-          throw new Error(DUPLICATE_BLOCK_ERROR.replace('%1', 'a field'));
-        }
-        resultField.setValue(sourceField.getValue());
-      }
+    const blockJson = blocks.save(origBlock, {
+      addCoordinates: false,
+      addInputBlocks: false,
+      addNextBlocks: false,
+      doFullSerialization: false,
+    });
+
+    if (!blockJson) {
+      throw new Error(
+        `Failed to serialize source block. ${origBlock.toDevString()}`,
+      );
     }
 
+    const result = blocks.append(blockJson, this.workspace) as BlockSvg;
+
+    // Turn shadow blocks that are created programmatically during
+    // initalization to insertion markers too.
     for (const block of result.getDescendants(false)) {
       block.setInsertionMarker(true);
     }
-
-    result.setCollapsed(origBlock.isCollapsed());
-    result.setInputsInline(origBlock.getInputsInline());
 
     result.initSvg();
     result.getSvgRoot().setAttribute('visibility', 'hidden');

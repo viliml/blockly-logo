@@ -27,8 +27,6 @@ import * as registry from './registry.js';
 import {Coordinate} from './utils/coordinate.js';
 import * as dom from './utils/dom.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
-import {hasBubble} from './interfaces/i_has_bubble.js';
-import * as deprecation from './utils/deprecation.js';
 import * as layers from './layers.js';
 import {ConnectionType, IConnectionPreviewer} from './blockly.js';
 import {RenderedConnection} from './rendered_connection.js';
@@ -71,13 +69,17 @@ export class BlockDragger implements IBlockDragger {
 
   /** Whether the block would be deleted if dropped immediately. */
   protected wouldDeleteBlock_ = false;
+
   protected startXY_: Coordinate;
 
+  /** The parent block at the start of the drag. */
+  private startParentConn: RenderedConnection | null = null;
+
   /**
-   * @deprecated To be removed in v11. Updating icons is now handled by the
-   *     block's `moveDuringDrag` method.
+   * The child block at the start of the drag. Only gets set if
+   * `healStack` is true.
    */
-  protected dragIconData_: IconPositionData[] = [];
+  private startChildConn: RenderedConnection | null = null;
 
   /**
    * @param block The block to drag.
@@ -98,8 +100,6 @@ export class BlockDragger implements IBlockDragger {
      * beginning of the drag in workspace coordinates.
      */
     this.startXY_ = this.draggingBlock_.getRelativeToSurfaceXY();
-
-    this.dragIconData_ = initIconData(block, this.startXY_);
   }
 
   /**
@@ -108,7 +108,6 @@ export class BlockDragger implements IBlockDragger {
    * @internal
    */
   dispose() {
-    this.dragIconData_.length = 0;
     this.connectionPreviewer.dispose();
   }
 
@@ -137,6 +136,13 @@ export class BlockDragger implements IBlockDragger {
     blockAnimation.disconnectUiStop();
 
     if (this.shouldDisconnect_(healStack)) {
+      this.startParentConn =
+        this.draggingBlock_.outputConnection?.targetConnection ??
+        this.draggingBlock_.previousConnection?.targetConnection;
+      if (healStack) {
+        this.startChildConn =
+          this.draggingBlock_.nextConnection?.targetConnection;
+      }
       this.disconnectBlock_(healStack, currentDragDeltaXY);
     }
     this.draggingBlock_.setDragging(true);
@@ -424,17 +430,10 @@ export class BlockDragger implements IBlockDragger {
         .getLayerManager()
         ?.moveOffDragLayer(this.draggingBlock_, layers.BLOCK);
       this.draggingBlock_.setDragging(false);
-      if (delta) {
-        // !preventMove
+      if (preventMove) {
+        this.moveToOriginalPosition();
+      } else if (delta) {
         this.updateBlockAfterMove_();
-      } else {
-        // Blocks dragged directly from a flyout may need to be bumped into
-        // bounds.
-        bumpObjects.bumpIntoBounds(
-          this.draggingBlock_.workspace,
-          this.workspace_.getMetricsManager().getScrollMetrics(true),
-          this.draggingBlock_,
-        );
       }
     }
     // Must dispose after `updateBlockAfterMove_` is called to not break the
@@ -443,6 +442,32 @@ export class BlockDragger implements IBlockDragger {
     this.workspace_.setResizesEnabled(true);
 
     eventUtils.setGroup(false);
+  }
+
+  /**
+   * Moves the dragged block back to its original position before the start of
+   * the drag. Reconnects any parent and child blocks.
+   */
+  private moveToOriginalPosition() {
+    this.startChildConn?.connect(this.draggingBlock_.nextConnection);
+    if (this.startParentConn) {
+      switch (this.startParentConn.type) {
+        case ConnectionType.INPUT_VALUE:
+          this.startParentConn.connect(this.draggingBlock_.outputConnection);
+          break;
+        case ConnectionType.NEXT_STATEMENT:
+          this.startParentConn.connect(this.draggingBlock_.previousConnection);
+      }
+    } else {
+      this.draggingBlock_.moveTo(this.startXY_, ['drag']);
+      // Blocks dragged directly from a flyout may need to be bumped into
+      // bounds.
+      bumpObjects.bumpIntoBounds(
+        this.draggingBlock_.workspace,
+        this.workspace_.getMetricsManager().getScrollMetrics(true),
+        this.draggingBlock_,
+      );
+    }
   }
 
   /**
@@ -494,7 +519,7 @@ export class BlockDragger implements IBlockDragger {
     } else {
       this.draggingBlock_.queueRender();
     }
-    this.draggingBlock_.scheduleSnapAndBump();
+    this.draggingBlock_.snapToGrid();
   }
 
   private applyConnections(candidate: ConnectionCandidate) {
@@ -607,16 +632,6 @@ export class BlockDragger implements IBlockDragger {
   }
 
   /**
-   * Move all of the icons connected to this drag.
-   *
-   * @deprecated To be removed in v11. This is now handled by the block's
-   *     `moveDuringDrag` method.
-   */
-  protected dragIcons_() {
-    deprecation.warn('Blockly.BlockDragger.prototype.dragIcons_', 'v10', 'v11');
-  }
-
-  /**
    * Get a list of the insertion markers that currently exist.  Drags have 0, 1,
    * or 2 insertion markers.
    *
@@ -633,40 +648,6 @@ export class BlockDragger implements IBlockDragger {
 export interface IconPositionData {
   location: Coordinate;
   icon: Icon;
-}
-
-/**
- * Make a list of all of the icons (comment, warning, and mutator) that are
- * on this block and its descendants.  Moving an icon moves the bubble that
- * extends from it if that bubble is open.
- *
- * @param block The root block that is being dragged.
- * @param blockOrigin The top left of the given block in workspace coordinates.
- * @returns The list of all icons and their locations.
- */
-function initIconData(
-  block: BlockSvg,
-  blockOrigin: Coordinate,
-): IconPositionData[] {
-  // Build a list of icons that need to be moved and where they started.
-  const dragIconData = [];
-
-  for (const icon of block.getIcons()) {
-    // Only bother to track icons whose bubble is visible.
-    if (hasBubble(icon) && !icon.bubbleIsVisible()) continue;
-
-    dragIconData.push({location: blockOrigin, icon: icon});
-    icon.onLocationChange(blockOrigin);
-  }
-
-  for (const child of block.getChildren(false)) {
-    dragIconData.push(
-      ...initIconData(child, Coordinate.sum(blockOrigin, child.relativeCoords)),
-    );
-  }
-  // AnyDuringMigration because:  Type '{ location: Coordinate | null; icon:
-  // Icon; }[]' is not assignable to type 'IconPositionData[]'.
-  return dragIconData as AnyDuringMigration;
 }
 
 registry.register(registry.Type.BLOCK_DRAGGER, registry.DEFAULT, BlockDragger);
