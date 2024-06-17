@@ -31,7 +31,8 @@ const TEMPLATE_DIR = 'scripts/package/templates';
  * @param {string} namespace The export namespace.
  * @param {Array<Object>} dependencies An array of dependencies to inject.
  */
-function packageUMD(namespace, dependencies, template = 'umd.template') {
+function packageUMD(namespace, dependencies, template = 'es6.template') {
+	console.log(template);
   return gulp.umd({
     dependencies: function () { return dependencies; },
     namespace: function () { return namespace; },
@@ -279,7 +280,7 @@ function packageLocales() {
   // Remove references to goog.provide and goog.require.
   return gulp.src(`${BUILD_DIR}/msg/*.js`)
       .pipe(gulp.replace(/goog\.[^\n]+/g, ''))
-      .pipe(packageUMD('Blockly.Msg', [], 'umd-msg.template'))
+      .pipe(packageUMD('Blockly.Msg', [], 'es6-msg.template'))
       .pipe(gulp.dest(`${RELEASE_DIR}/msg`));
 };
 

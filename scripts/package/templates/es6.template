@@ -1,0 +1,11 @@
+/* eslint-disable */
+<% if (amd) {
+	_.forEach(_.zip(amd.split(', '), param.split(', ')), function(x) {
+		const [path, name] = x;
+		if (path) {
+			%>import <%= name %> from <%= path %>;<%
+		}
+	});
+} %>
+<%= contents %>
+export default <%= exports %>
